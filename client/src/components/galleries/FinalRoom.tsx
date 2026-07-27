@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMuseum } from "@/contexts/MuseumContext";
 import RoomEnvironment, { GALLERY_ENVIRONMENTS } from "@/components/RoomEnvironment";
+import RoomAtmosphere, { GALLERY_ATMOSPHERES } from "@/components/RoomAtmosphere";
 
 const BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
 
@@ -54,6 +55,7 @@ export default function FinalRoom({ onLastExhibit }: { onLastExhibit: () => void
     >
       {/* Environmental storytelling */}
       <RoomEnvironment profile={GALLERY_ENVIRONMENTS["final-room"] || {}} visible={visible} />
+      <RoomAtmosphere profile={GALLERY_ATMOSPHERES["final-room"] || {}} visible={visible} />
       <p className="plaque mb-10">gallery thirteen · the final hall</p>
       {/* bench + window */}
       <div className="mb-10 flex items-end gap-6 opacity-80" aria-hidden="true" style={{ animation: visible ? "fadeIn 3s ease both" : undefined }}>
