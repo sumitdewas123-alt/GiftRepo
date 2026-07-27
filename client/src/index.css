@@ -290,6 +290,62 @@
   }
 }
 
+/* ---- Corridor / transition space styles ---- */
+@layer components {
+  /* Corridor warm glow overlay */
+  .corridor-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 80% 50% at 50% 30%, oklch(0.85 0.1 85 / 8%), transparent 60%);
+  }
+
+  /* Wood plank floor pattern */
+  .wood-floor {
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent calc(12.5% - 1px),
+      oklch(0.25 0.04 60 / 15%) calc(12.5% - 1px),
+      oklch(0.25 0.04 60 / 15%) 12.5%
+    );
+  }
+
+  /* Vignette for corridor edges */
+  .corridor-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 70% 80% at 50% 50%, transparent 50%, oklch(0.1 0.02 60 / 40%) 100%);
+  }
+
+  /* Scroll hint arrow */
+  .scroll-hint {
+    animation: scrollBounce 2s ease-in-out infinite;
+  }
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+@keyframes corridorWalk {
+  0% { transform: scale(1) translateY(0); filter: brightness(1); }
+  50% { transform: scale(1.01) translateY(-2px); filter: brightness(1.05); }
+  100% { transform: scale(1) translateY(0); filter: brightness(1); }
+}
+
+@keyframes doorGlow {
+  0%, 100% { box-shadow: 0 0 20px oklch(0.85 0.1 85 / 15%); }
+  50% { box-shadow: 0 0 40px oklch(0.85 0.1 85 / 30%); }
+}
+
+@keyframes gentleSway {
+  0%, 100% { transform: rotate(-0.5deg); }
+  50% { transform: rotate(0.5deg); }
+}
+
 /* ---- Keyframe animations (scene-level, allowed to be slow) ---- */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
