@@ -1,0 +1,337 @@
+/*
+ * THE MUSEUM OF CHICKO — "The Gilded Archive" theme
+ * Candlelit old-world museum: walnut wood, parchment, brass plaques, candle-gold light.
+ * Light = day mode (parchment), dark = night mode (espresso, museum after hours).
+ * Fonts: Cormorant Garamond (display/plaques), EB Garamond (body), Caveat (handwritten).
+ */
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-gold: var(--gold);
+  --color-gold-dim: var(--gold-dim);
+  --color-parchment: var(--parchment);
+  --color-walnut: var(--walnut);
+  --color-espresso: var(--espresso);
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "EB Garamond", Georgia, serif;
+  --font-hand: "Caveat", cursive;
+}
+
+:root {
+  --radius: 0.25rem;
+  /* Day mode: parchment gallery */
+  --background: oklch(0.955 0.02 85);           /* warm cream #F5EFE3 */
+  --foreground: oklch(0.3 0.03 60);             /* dark walnut text */
+  --card: oklch(0.93 0.025 85);                 /* parchment */
+  --card-foreground: oklch(0.3 0.03 60);
+  --popover: oklch(0.955 0.02 85);
+  --popover-foreground: oklch(0.3 0.03 60);
+  --primary: oklch(0.72 0.09 80);               /* candle gold #C9A45C */
+  --primary-foreground: oklch(0.22 0.03 60);
+  --secondary: oklch(0.9 0.028 82);
+  --secondary-foreground: oklch(0.35 0.03 60);
+  --muted: oklch(0.91 0.02 85);
+  --muted-foreground: oklch(0.5 0.03 65);
+  --accent: oklch(0.88 0.04 82);
+  --accent-foreground: oklch(0.3 0.03 60);
+  --destructive: oklch(0.5 0.15 25);
+  --destructive-foreground: oklch(0.97 0.01 85);
+  --border: oklch(0.72 0.09 80 / 35%);
+  --input: oklch(0.72 0.09 80 / 40%);
+  --ring: oklch(0.72 0.09 80);
+  --chart-1: oklch(0.72 0.09 80);
+  --chart-2: oklch(0.55 0.06 140);
+  --chart-3: oklch(0.45 0.1 25);
+  --chart-4: oklch(0.6 0.05 60);
+  --chart-5: oklch(0.4 0.04 60);
+  --sidebar: oklch(0.93 0.025 85);
+  --sidebar-foreground: oklch(0.3 0.03 60);
+  --sidebar-primary: oklch(0.72 0.09 80);
+  --sidebar-primary-foreground: oklch(0.22 0.03 60);
+  --sidebar-accent: oklch(0.88 0.04 82);
+  --sidebar-accent-foreground: oklch(0.3 0.03 60);
+  --sidebar-border: oklch(0.72 0.09 80 / 30%);
+  --sidebar-ring: oklch(0.72 0.09 80);
+  --gold: oklch(0.72 0.09 80);
+  --gold-dim: oklch(0.6 0.08 78);
+  --parchment: oklch(0.93 0.025 85);
+  --walnut: oklch(0.35 0.04 60);
+  --espresso: oklch(0.24 0.025 60);
+}
+
+.dark {
+  /* Night mode: museum after hours */
+  --background: oklch(0.22 0.02 60);            /* espresso #211A12 */
+  --foreground: oklch(0.88 0.03 85);            /* warm cream text */
+  --card: oklch(0.27 0.025 62);                 /* walnut panel */
+  --card-foreground: oklch(0.88 0.03 85);
+  --popover: oklch(0.25 0.025 62);
+  --popover-foreground: oklch(0.88 0.03 85);
+  --primary: oklch(0.75 0.1 82);
+  --primary-foreground: oklch(0.2 0.02 60);
+  --secondary: oklch(0.3 0.03 62);
+  --secondary-foreground: oklch(0.85 0.03 85);
+  --muted: oklch(0.3 0.025 62);
+  --muted-foreground: oklch(0.68 0.04 80);
+  --accent: oklch(0.33 0.035 65);
+  --accent-foreground: oklch(0.9 0.03 85);
+  --destructive: oklch(0.6 0.16 25);
+  --destructive-foreground: oklch(0.95 0.01 85);
+  --border: oklch(0.75 0.1 82 / 25%);
+  --input: oklch(0.75 0.1 82 / 30%);
+  --ring: oklch(0.75 0.1 82);
+  --sidebar: oklch(0.25 0.025 62);
+  --sidebar-foreground: oklch(0.88 0.03 85);
+  --sidebar-primary: oklch(0.75 0.1 82);
+  --sidebar-primary-foreground: oklch(0.2 0.02 60);
+  --sidebar-accent: oklch(0.33 0.035 65);
+  --sidebar-accent-foreground: oklch(0.9 0.03 85);
+  --sidebar-border: oklch(0.75 0.1 82 / 22%);
+  --sidebar-ring: oklch(0.75 0.1 82);
+  --gold: oklch(0.75 0.1 82);
+  --gold-dim: oklch(0.62 0.08 78);
+  --parchment: oklch(0.3 0.03 62);
+  --walnut: oklch(0.32 0.035 60);
+  --espresso: oklch(0.19 0.02 60);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    transition: background-color 1.2s ease, color 1.2s ease;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+  ::selection {
+    background: oklch(0.72 0.09 80 / 40%);
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+  @media (min-width: 640px) {
+    .container { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+  @media (min-width: 1024px) {
+    .container { padding-left: 2rem; padding-right: 2rem; max-width: 1280px; }
+  }
+
+  /* ---- Museum signature components ---- */
+  .font-display { font-family: var(--font-display); }
+  .font-body { font-family: var(--font-body); }
+  .font-hand { font-family: var(--font-hand); }
+
+  /* Brass plaque label */
+  .plaque {
+    font-family: var(--font-display);
+    font-variant: small-caps;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    font-size: 0.75rem;
+    color: var(--gold-dim);
+    border: 1px solid oklch(0.72 0.09 80 / 45%);
+    padding: 0.35rem 1rem;
+    display: inline-block;
+    background:
+      linear-gradient(160deg, oklch(0.72 0.09 80 / 10%), transparent 60%),
+      var(--parchment);
+    box-shadow: 0 1px 3px oklch(0.24 0.025 60 / 15%), inset 0 0 0 3px oklch(0.72 0.09 80 / 8%);
+  }
+
+  /* Paper grain overlay */
+  .paper-texture {
+    position: relative;
+  }
+  .paper-texture::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.47 0 0 0 0 0.35 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Ornate frame */
+  .museum-frame {
+    border: 10px solid transparent;
+    border-image: linear-gradient(135deg, oklch(0.65 0.09 80), oklch(0.82 0.1 85), oklch(0.55 0.08 75), oklch(0.78 0.1 82)) 1;
+    box-shadow:
+      0 0 0 1px oklch(0.4 0.05 65),
+      0 10px 30px -8px oklch(0.15 0.02 60 / 55%),
+      inset 0 0 0 1px oklch(0.4 0.05 65);
+  }
+
+  /* Pin-spot light cone */
+  .pinspot {
+    position: relative;
+  }
+  .pinspot::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -3.5rem;
+    transform: translateX(-50%);
+    width: 130%;
+    height: 6rem;
+    background: radial-gradient(ellipse 60% 100% at 50% 0%, oklch(0.85 0.1 85 / 30%), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Sticky note */
+  .sticky-note {
+    font-family: var(--font-hand);
+    background: linear-gradient(160deg, #fdf3c0, #f7e8a2);
+    color: #4a3c1a;
+    box-shadow: 0 4px 10px -2px oklch(0.24 0.025 60 / 30%);
+  }
+
+  /* Handwritten tape */
+  .washi-tape {
+    position: absolute;
+    top: -0.7rem;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 5rem;
+    height: 1.4rem;
+    background: oklch(0.72 0.09 80 / 45%);
+    backdrop-filter: blur(1px);
+    box-shadow: 0 1px 2px oklch(0.24 0.025 60 / 20%);
+  }
+
+  /* Room title reveal */
+  .room-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  /* Gold rule ornament */
+  .gold-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gold);
+  }
+  .gold-rule::before,
+  .gold-rule::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, oklch(0.72 0.09 80 / 60%), transparent);
+  }
+}
+
+/* ---- Keyframe animations (scene-level, allowed to be slow) ---- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.85; }
+  94% { opacity: 1; }
+  97% { opacity: 0.92; }
+}
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+@keyframes swing {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+@keyframes printOut {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes bloomIn {
+  from { opacity: 0; transform: scale(0.3) rotate(-30deg); }
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
