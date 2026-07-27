@@ -4,6 +4,7 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 import { useMuseum } from "@/contexts/MuseumContext";
+import RoomEnvironment, { type EnvironmentProfile, GALLERY_ENVIRONMENTS } from "./RoomEnvironment";
 
 interface RoomProps {
   id: string;
@@ -14,9 +15,10 @@ interface RoomProps {
   children: React.ReactNode;
   bgImage?: string;
   className?: string;
+  environment?: EnvironmentProfile;
 }
 
-export default function RoomSection({ id, plaque, title, subtitle, tone = "cream", children, bgImage, className = "" }: RoomProps) {
+export default function RoomSection({ id, plaque, title, subtitle, tone = "cream", children, bgImage, className = "", environment }: RoomProps) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
   const { markVisited } = useMuseum();
@@ -60,6 +62,8 @@ export default function RoomSection({ id, plaque, title, subtitle, tone = "cream
           : undefined
       }
     >
+      {/* Environmental storytelling layer */}
+      <RoomEnvironment profile={environment || GALLERY_ENVIRONMENTS[id] || {}} visible={visible} />
       <div className="container relative z-10">
         <header
           className="mb-14 md:mb-20"

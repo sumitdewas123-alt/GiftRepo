@@ -2,6 +2,7 @@
  * A frame that is a mirror. The Archivist drops a feather. Button: "Leave Museum". */
 import { useEffect, useRef, useState } from "react";
 import { useMuseum } from "@/contexts/MuseumContext";
+import RoomEnvironment, { GALLERY_ENVIRONMENTS } from "@/components/RoomEnvironment";
 
 const BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
 
@@ -51,6 +52,8 @@ export default function FinalRoom({ onLastExhibit }: { onLastExhibit: () => void
       aria-label="Gallery Thirteen — The Final Hall"
       className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-background via-[#fdfbf6] to-white px-6 py-32 text-center dark:via-[oklch(0.3_0.02_60)] dark:to-[oklch(0.4_0.02_75)]"
     >
+      {/* Environmental storytelling */}
+      <RoomEnvironment profile={GALLERY_ENVIRONMENTS["final-room"] || {}} visible={visible} />
       <p className="plaque mb-10">gallery thirteen · the final hall</p>
       {/* bench + window */}
       <div className="mb-10 flex items-end gap-6 opacity-80" aria-hidden="true" style={{ animation: visible ? "fadeIn 3s ease both" : undefined }}>
