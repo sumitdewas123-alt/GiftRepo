@@ -4,12 +4,11 @@
  * Also doubles as the password-protected hidden gallery (password: chicko). */
 import { useState } from "react";
 import RoomSection from "@/components/RoomSection";
-import { letters, hiddenLetterText, type Letter } from "@/lib/museumData";
+import { letters, hiddenLetterText, hiddenGalleryPassword, type Letter } from "@/lib/museumData";
 import { useMuseum } from "@/contexts/MuseumContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Lock } from "lucide-react";
 
-const PASSWORD = "chicko";
 
 export default function Gallery11Letters() {
   const { hiddenUnlocked, unlockHidden, lettersRead, markLetterRead, award } = useMuseum();
@@ -20,7 +19,7 @@ export default function Gallery11Letters() {
 
   const tryPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pw.trim().toLowerCase() === PASSWORD) {
+    if (pw.trim().toLowerCase() === hiddenGalleryPassword.toLowerCase()) {
       unlockHidden("password accepted");
       setError(false);
     } else {
@@ -121,9 +120,17 @@ export default function Gallery11Letters() {
             <DialogDescription className="plaque self-start !text-[10px]">letters never sent · archive copy</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            {selected?.body.map((para) => (
-              <p key={para.slice(0, 20)} className="font-hand text-xl leading-relaxed text-[#4a3c1a]">{para}</p>
-            ))}
+            {selected?.body.map((para) =>
+              /<[a-z][\s\S]*>/i.test(para) ? (
+                <div
+                  key={para.slice(0, 20)}
+                  className="font-hand text-xl leading-relaxed text-[#4a3c1a] [&_blockquote]:border-l-2 [&_blockquote]:border-[#8a6f3c] [&_blockquote]:pl-3 [&_blockquote]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+                  dangerouslySetInnerHTML={{ __html: para }}
+                />
+              ) : (
+                <p key={para.slice(0, 20)} className="font-hand text-xl leading-relaxed text-[#4a3c1a]">{para}</p>
+              )
+            )}
             <p className="pt-2 text-right font-hand text-2xl text-[#5a4327]">— Weak Memory</p>
           </div>
         </DialogContent>

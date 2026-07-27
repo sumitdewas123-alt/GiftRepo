@@ -78,6 +78,17 @@ export default function Gallery6Sound() {
                 </button>
               </div>
               <p className="mt-3 font-body text-sm italic leading-relaxed text-[#d8c9a5]">{s.why}</p>
+              {s.spotifyLink && (
+                <a
+                  href={s.spotifyLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-2 inline-flex items-center gap-1.5 font-display text-[10px] tracking-[0.2em] text-[#1DB954] transition-colors hover:text-[#1ed760] focus:outline-none focus:ring-2 focus:ring-[#c9a45c]"
+                >
+                  ♫ OPEN ON SPOTIFY ↗
+                </a>
+              )}
               {playing && (
                 <div className="mt-3 flex h-6 items-end gap-1" aria-hidden="true">
                   {Array.from({ length: 24 }).map((_, i) => (

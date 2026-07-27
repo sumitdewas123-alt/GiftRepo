@@ -285,11 +285,19 @@ export default function Entrance({ onComplete }: { onComplete: () => void }) {
             {stage === "letter" && (
               <div style={{ animation: "fadeUp 1s cubic-bezier(0.23,1,0.32,1) both" }}>
                 <div className="paper-texture mx-auto max-h-[52vh] overflow-y-auto border border-[#c9a45c]/50 bg-[#f8f2e2] p-6 text-left shadow-2xl md:p-9">
-                  {dearChickoLetter.map((para, i) => (
-                    <p key={para.slice(0, 24)} className={`mb-3 font-hand leading-relaxed text-[#4a3c1a] ${i === 0 ? "text-3xl" : i >= dearChickoLetter.length - 2 ? "text-2xl" : "text-xl"}`}>
-                      {para}
-                    </p>
-                  ))}
+                  {dearChickoLetter.map((para, i) =>
+                    /<[a-z][\s\S]*>/i.test(para) ? (
+                      <div
+                        key={para.slice(0, 24)}
+                        className={`mb-3 font-hand leading-relaxed text-[#4a3c1a] ${i === 0 ? "text-3xl" : i >= dearChickoLetter.length - 2 ? "text-2xl" : "text-xl"} [&_blockquote]:border-l-2 [&_blockquote]:border-[#8a6f3c] [&_blockquote]:pl-3 [&_blockquote]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6`}
+                        dangerouslySetInnerHTML={{ __html: para }}
+                      />
+                    ) : (
+                      <p key={para.slice(0, 24)} className={`mb-3 font-hand leading-relaxed text-[#4a3c1a] ${i === 0 ? "text-3xl" : i >= dearChickoLetter.length - 2 ? "text-2xl" : "text-xl"}`}>
+                        {para}
+                      </p>
+                    )
+                  )}
                 </div>
 
                 {/* Museum Rules */}

@@ -101,6 +101,9 @@ export default function Gallery5Library() {
                 <DialogTitle className="room-title text-xl leading-snug">{selected?.title}</DialogTitle>
                 <DialogDescription className="plaque mt-2 !text-[10px]">{selected?.by}</DialogDescription>
               </DialogHeader>
+              {selected?.coverImage && (
+                <img src={selected.coverImage} alt={`Cover of ${selected.title}`} className="mt-3 max-h-40 w-auto border border-[#d8ccae] object-contain shadow" />
+              )}
               <p className="mt-4 font-body text-sm italic leading-relaxed">{selected?.note}</p>
             </div>
             <div className="bg-gradient-to-l from-[#f4ecd8] to-[#efe6ce] p-6">

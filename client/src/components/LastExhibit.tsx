@@ -93,11 +93,19 @@ export default function LastExhibit({ onClose }: { onClose: () => void }) {
       {phase === "letter" && (
         <div className="flex min-h-full flex-col items-center justify-center px-6 py-16" style={{ animation: "fadeIn 1.5s ease both" }}>
           <div className="paper-texture max-w-xl border border-[#8a6f3c]/40 bg-[#f8f2e2] p-8 shadow-2xl md:p-10">
-            {postCreditsLetter.map((para, i) => (
-              <p key={para.slice(0, 20)} className={`mb-3 font-hand leading-relaxed text-[#4a3c1a] ${i === 0 || i >= postCreditsLetter.length - 2 ? "text-2xl" : "text-xl"}`}>
-                {para}
-              </p>
-            ))}
+            {postCreditsLetter.map((para, i) =>
+              /<[a-z][\s\S]*>/i.test(para) ? (
+                <div
+                  key={para.slice(0, 20)}
+                  className={`mb-3 font-hand leading-relaxed text-[#4a3c1a] ${i === 0 || i >= postCreditsLetter.length - 2 ? "text-2xl" : "text-xl"} [&_blockquote]:border-l-2 [&_blockquote]:border-[#8a6f3c] [&_blockquote]:pl-3 [&_blockquote]:italic [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6`}
+                  dangerouslySetInnerHTML={{ __html: para }}
+                />
+              ) : (
+                <p key={para.slice(0, 20)} className={`mb-3 font-hand leading-relaxed text-[#4a3c1a] ${i === 0 || i >= postCreditsLetter.length - 2 ? "text-2xl" : "text-xl"}`}>
+                  {para}
+                </p>
+              )
+            )}
           </div>
           <button
             onClick={() => setPhase("credits")}

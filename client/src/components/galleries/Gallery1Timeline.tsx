@@ -2,7 +2,7 @@
  * Memory 001–007 cards, Exhibit 01 portrait, hidden drawer note. */
 import { useState } from "react";
 import RoomSection from "@/components/RoomSection";
-import { timeline, memoryCards } from "@/lib/museumData";
+import { timeline, memoryCards, gallery1PortraitImage, gallery1DrawerNote } from "@/lib/museumData";
 
 export default function Gallery1Timeline() {
   const [open, setOpen] = useState<string | null>(timeline[0].year);
@@ -14,9 +14,13 @@ export default function Gallery1Timeline() {
         <div className="space-y-6">
           {/* Exhibit 01 — portrait */}
           <div className="museum-frame pinspot relative bg-background p-6 text-center md:p-8">
-            <div className="mx-auto flex h-52 w-44 items-center justify-center bg-gradient-to-br from-[#d9cbb0] to-[#b8a583] text-5xl" aria-label="Portrait placeholder — replace with a natural, smiling photograph of Chicko">
-              🖼️
-            </div>
+            {gallery1PortraitImage ? (
+              <img src={gallery1PortraitImage} alt="Portrait — Before Either of Us Knew" className="mx-auto h-52 w-44 object-cover" />
+            ) : (
+              <div className="mx-auto flex h-52 w-44 items-center justify-center bg-gradient-to-br from-[#d9cbb0] to-[#b8a583] text-5xl" aria-label="Portrait placeholder — replace with a natural, smiling photograph of Chicko">
+                🖼️
+              </div>
+            )}
             <p className="plaque mt-5">exhibit 01</p>
             <p className="mt-2 font-display text-xl italic">"Before Either of Us Knew."</p>
             <p className="mt-1 font-body text-sm italic text-muted-foreground">Not glamorous. Just natural. Smiling.</p>
@@ -43,7 +47,7 @@ export default function Gallery1Timeline() {
             </p>
             <div className="overflow-hidden transition-all duration-500" style={{ maxHeight: drawerOpen ? "8rem" : "0", opacity: drawerOpen ? 1 : 0 }}>
               <p className="mt-3 bg-[#f6ecd4] p-4 font-hand text-xl leading-snug text-[#5a4327] shadow-inner">
-                "Funny how the most important people almost always arrive looking completely ordinary."
+                "{gallery1DrawerNote}"
               </p>
             </div>
           </button>
@@ -67,8 +71,11 @@ export default function Gallery1Timeline() {
                   <span className="font-display text-2xl font-semibold text-[oklch(0.6_0.08_78)]">{t.year}</span>
                   <span className="room-title text-xl transition-colors duration-200 group-hover:text-[oklch(0.6_0.08_78)]">{t.title}</span>
                 </button>
-                <div className="overflow-hidden transition-all duration-500" style={{ maxHeight: isOpen ? "14rem" : "0", opacity: isOpen ? 1 : 0 }}>
+                <div className="overflow-hidden transition-all duration-500" style={{ maxHeight: isOpen ? "28rem" : "0", opacity: isOpen ? 1 : 0 }}>
                   <div className="mt-3 max-w-lg border-l-2 border-[oklch(0.72_0.09_80/40%)] pl-4">
+                    {t.image && (
+                      <img src={t.image} alt={`${t.year} — ${t.title}`} className="mb-3 max-h-40 w-auto border border-[oklch(0.72_0.09_80/40%)] object-cover shadow-md" />
+                    )}
                     <p className="font-body italic leading-relaxed text-muted-foreground">{t.text}</p>
                     <p className="mt-2 font-hand text-base text-[oklch(0.55_0.06_70)]">drawer contents: photos · chats · notes · songs · books from this year</p>
                   </div>

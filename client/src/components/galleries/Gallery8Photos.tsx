@@ -21,13 +21,21 @@ function PolaroidCard({ p, flipped, onFlip, index }: { p: (typeof polaroids)[0];
         >
           {/* front */}
           <div className="absolute inset-0 bg-white p-2.5 pb-8 shadow-lg [backface-visibility:hidden]">
-            <div
-              className="flex h-36 items-center justify-center text-4xl md:h-40"
-              style={{ background: `linear-gradient(135deg, hsl(${p.hue}, 30%, 75%), hsl(${p.hue + 30}, 25%, 60%))` }}
-              aria-label="Placeholder photo — replace with a real photograph"
-            >
-              📷
-            </div>
+            {p.image ? (
+              <img
+                src={p.image}
+                alt={p.caption}
+                className="h-36 w-full object-cover md:h-40"
+              />
+            ) : (
+              <div
+                className="flex h-36 items-center justify-center text-4xl md:h-40"
+                style={{ background: `linear-gradient(135deg, hsl(${p.hue}, 30%, 75%), hsl(${p.hue + 30}, 25%, 60%))` }}
+                aria-label="Placeholder photo — replace with a real photograph"
+              >
+                📷
+              </div>
+            )}
             <p className="mt-2 text-center font-hand text-lg text-[#4a3c1a]">{p.caption}</p>
           </div>
           {/* back */}

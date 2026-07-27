@@ -67,6 +67,9 @@ export default function Gallery9Map() {
             <DialogTitle className="room-title text-2xl">{selected?.place}</DialogTitle>
             <DialogDescription className="plaque mt-1 self-start">{selected?.date}</DialogDescription>
           </DialogHeader>
+          {selected?.image && (
+            <img src={selected.image} alt={selected.place} className="max-h-56 w-full border border-[oklch(0.72_0.09_80/40%)] object-cover shadow-md" />
+          )}
           <p className="font-body leading-relaxed">{selected?.memory}</p>
           {selected?.future && <p className="font-hand text-xl text-[oklch(0.55_0.06_70)]">Museum label: Reserved.</p>}
         </DialogContent>

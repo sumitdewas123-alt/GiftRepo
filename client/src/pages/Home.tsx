@@ -4,7 +4,7 @@
  * 13 galleries with transition corridors between each → final room → guestbook → footer.
  * Ambient layers on top. Corridors create the feeling of walking through a real museum.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMuseum } from "@/contexts/MuseumContext";
 import Entrance from "@/components/Entrance";
 import ControlDock from "@/components/ControlDock";
@@ -40,6 +40,22 @@ import FinalRoom from "@/components/galleries/FinalRoom";
 export default function Home() {
   const { entered, setEntered, markVisited } = useMuseum();
   const [lastExhibitOpen, setLastExhibitOpen] = useState(false);
+
+  // Live preview: when Curator Mode saves changes, re-mount galleries so they
+  // pick up the fresh data. Debounced so rapid typing doesn't thrash the DOM.
+  const [dataVersion, setDataVersion] = useState(0);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const onChange = () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => setDataVersion((v) => v + 1), 400);
+    };
+    window.addEventListener("moc-data-changed", onChange);
+    return () => {
+      window.removeEventListener("moc-data-changed", onChange);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   // allow direct entry via ?inside=1 (also used for QA previews)
   if (!entered && typeof window !== "undefined" && new URLSearchParams(window.location.search).has("inside")) {
@@ -77,7 +93,7 @@ export default function Home() {
       <AchievementsPanel />
       <GuideBird />
 
-      <main id="main">
+      <main id="main" key={dataVersion}>
         {/* ========== WELCOME LANDING STRIP ========== */}
         <section className="paper-texture relative flex min-h-[60vh] flex-col items-center justify-center bg-background px-6 py-24 text-center" aria-label="Museum welcome">
           <img src="/manus-storage/logo-bird_bdea2d3a.png" alt="" className="h-16 w-16" style={{ animation: "floatSlow 5s ease-in-out infinite" }} />

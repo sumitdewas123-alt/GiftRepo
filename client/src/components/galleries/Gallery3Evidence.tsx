@@ -82,6 +82,9 @@ export default function Gallery4Evidence() {
             <DialogTitle className="room-title text-2xl">{selected?.title}</DialogTitle>
             <DialogDescription className="font-hand text-xl text-[oklch(0.55_0.06_70)]">{selected?.caption}</DialogDescription>
           </DialogHeader>
+          {selected?.image && (
+            <img src={selected.image} alt={selected.title} className="max-h-64 w-full border border-[oklch(0.72_0.09_80/40%)] object-contain shadow-md" />
+          )}
           <p className="font-body leading-relaxed">{selected?.context}</p>
           <p className="plaque mt-2 self-start">evidence · case no. 2015-∞</p>
         </DialogContent>
