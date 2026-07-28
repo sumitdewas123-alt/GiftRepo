@@ -74,6 +74,32 @@ export interface Book {
   keywords: string[];
   coverImage: string | null;
 }
+export interface Performance {
+  id: string;
+  title: string;
+  year: string;
+  description: string;
+  location: string;
+  memory: string;
+  curatorNote: string;
+  quote: string;
+  thumbnail: string | null;
+  video: string | null;
+  videoType: "none" | "upload" | "youtube" | "drive";
+  keywords: string[];
+}
+export interface SpecialExhibit {
+  id: string;
+  label: string;
+  performanceId: string;
+  note: string;
+}
+export interface StudioCaseItem {
+  id: string;
+  emoji: string;
+  label: string;
+  note: string;
+}
 export interface Cassette {
   id: string;
   label: string;
@@ -153,11 +179,22 @@ export interface MuseumData {
     glassCaseDescription: string;
   };
   gallery4: {
-    books: Book[];
-    quoteWall: { quote: string; why: string }[];
+    roomTitle: string;
+    roomSubtitle: string;
+    wallTitle: string;
+    wallHint: string;
+    centerpieceTitle: string;
+    centerpieceText: string;
+    reservedChairQuote: string;
+    reservedChairLeft: string;
+    reservedChairRight: string;
+    performances: Performance[];
+    specialExhibits: SpecialExhibit[];
+    studioCase: StudioCaseItem[];
     hiddenNote: string;
-    reservedChairText: string;
     hiddenCompartmentNote: string;
+    hairpinNote: string;
+    scheduleNote: string;
   };
   gallery5: {
     cassettes: Cassette[];
@@ -302,7 +339,7 @@ export function buildSearchIndex(): SearchItem[] {
   data.gallery2.walls.forEach((w) => items.push({ id: w.id, gallery: "Gallery 2 · The Person You Became", galleryAnchor: "gallery-2", title: w.title, snippet: w.lines.join(" "), keywords: w.keywords }));
   data.gallery2.observations.forEach((o) => items.push({ id: o.id, gallery: "Gallery 3 · The Things You Never Notice", galleryAnchor: "gallery-3", title: o.frame, snippet: o.text, keywords: o.keywords }));
   data.gallery3.evidence.forEach((e) => items.push({ id: e.id, gallery: "Gallery 4 · The Evidence Room", galleryAnchor: "gallery-4", title: e.title, snippet: e.context, keywords: e.keywords }));
-  data.gallery4.books.forEach((b) => items.push({ id: b.id, gallery: "Gallery 5 · The Library of Us", galleryAnchor: "gallery-5", title: b.title, snippet: b.note, keywords: b.keywords }));
+  data.gallery4.performances.forEach((p) => items.push({ id: p.id, gallery: "Gallery 5 · The Dance Studio of Her Story", galleryAnchor: "gallery-5", title: p.title, snippet: p.description, keywords: p.keywords }));
   data.gallery5.cassettes.forEach((c) => items.push({ id: c.id, gallery: "Gallery 6 · The Sound Room", galleryAnchor: "gallery-6", title: `Cassette: ${c.label}`, snippet: c.why, keywords: c.keywords }));
   data.gallery5.songs.forEach((s) => items.push({ id: s.id, gallery: "Gallery 6 · The Sound Room", galleryAnchor: "gallery-6", title: s.title, snippet: s.why, keywords: s.keywords }));
   data.gallery7.cabinets.forEach((c) => items.push({ id: c.id, gallery: "Gallery 7 · The Little Things Room", galleryAnchor: "gallery-7", title: c.label, snippet: c.explanation, keywords: c.keywords }));
@@ -326,7 +363,7 @@ export function allMemories(): MemoryCard[] {
   data.gallery1.memoryCards.forEach((m) => pool.push({ title: m.no, text: m.text, gallery: "The Girl I Met", anchor: "gallery-1" }));
   data.gallery2.observations.forEach((o) => pool.push({ title: o.frame, text: o.text, gallery: "The Things You Never Notice", anchor: "gallery-3" }));
   data.gallery3.evidence.forEach((e) => pool.push({ title: e.title, text: e.context, gallery: "The Evidence Room", anchor: "gallery-4" }));
-  data.gallery4.books.forEach((b) => pool.push({ title: b.title, text: b.note, gallery: "The Library of Us", anchor: "gallery-5" }));
+  data.gallery4.performances.forEach((p) => pool.push({ title: p.title, text: p.description, gallery: "The Dance Studio of Her Story", anchor: "gallery-5" }));
   data.gallery10.stars.forEach((s) => pool.push({ title: "A star-memory", text: s.memory, gallery: "The Constellation Room", anchor: "gallery-10" }));
   return pool;
 }

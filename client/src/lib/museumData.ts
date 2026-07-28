@@ -22,6 +22,9 @@ import {
   type Observation,
   type Evidence,
   type Book,
+  type Performance,
+  type SpecialExhibit,
+  type StudioCaseItem,
   type Cassette,
   type Song,
   type Cabinet,
@@ -41,6 +44,9 @@ export type {
   Observation,
   Evidence,
   Book,
+  Performance,
+  SpecialExhibit,
+  StudioCaseItem,
   Cassette,
   Song,
   Cabinet,
@@ -76,11 +82,12 @@ export let laughCounter: { label: string; value: string }[] = d.gallery3.laughCo
 export let glassCaseText: string = d.gallery3.glassCaseText;
 export let glassCaseDescription: string = d.gallery3.glassCaseDescription;
 
-/* Gallery 5 (library) */
-export let books: Book[] = d.gallery4.books;
-export let quoteWall: { quote: string; why: string }[] = d.gallery4.quoteWall;
-export let libraryHiddenNote: string = d.gallery4.hiddenNote;
-export let reservedChairText: string = d.gallery4.reservedChairText;
+/* Gallery 5 (dance studio) */
+export let danceStudio = d.gallery4;
+export let performances: Performance[] = d.gallery4.performances;
+export let specialExhibits: SpecialExhibit[] = d.gallery4.specialExhibits;
+export let studioCase: StudioCaseItem[] = d.gallery4.studioCase;
+export let studioHiddenNote: string = d.gallery4.hiddenNote;
 export let hiddenCompartmentNote: string = d.gallery4.hiddenCompartmentNote;
 
 /* Gallery 6 (sound) */
@@ -145,10 +152,11 @@ function refreshBindings() {
   laughCounter = d.gallery3.laughCounter;
   glassCaseText = d.gallery3.glassCaseText;
   glassCaseDescription = d.gallery3.glassCaseDescription;
-  books = d.gallery4.books;
-  quoteWall = d.gallery4.quoteWall;
-  libraryHiddenNote = d.gallery4.hiddenNote;
-  reservedChairText = d.gallery4.reservedChairText;
+  danceStudio = d.gallery4;
+  performances = d.gallery4.performances;
+  specialExhibits = d.gallery4.specialExhibits;
+  studioCase = d.gallery4.studioCase;
+  studioHiddenNote = d.gallery4.hiddenNote;
   hiddenCompartmentNote = d.gallery4.hiddenCompartmentNote;
   cassettes = d.gallery5.cassettes;
   songs = d.gallery5.songs;

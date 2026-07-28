@@ -11,7 +11,7 @@ const rooms = [
   { id: "gallery-1", label: "1 · The Girl I Met" },
   { id: "gallery-2", label: "2 · Things You Don't Notice" },
   { id: "gallery-3", label: "3 · The Evidence Room" },
-  { id: "gallery-4", label: "4 · The Library" },
+  { id: "gallery-4", label: "4 · The Dance Studio" },
   { id: "gallery-5", label: "5 · The Sound Room" },
   { id: "gallery-6", label: "6 · Wall of Thank You" },
   { id: "gallery-7", label: "7 · The Little Things" },

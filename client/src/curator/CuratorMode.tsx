@@ -8,7 +8,7 @@ import { useCurator } from "./CuratorContext";
 import { useImageUpload } from "./useImageUpload";
 import RichTextEditor from "./RichTextEditor";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import type { MuseumData, TimelineEntry, MemoryCardSmall, WallItem, Observation, Evidence, Book, Cassette, Song, Cabinet, Polaroid, MapPin, Star, Letter, FutureLabel } from "@/lib/museumDataLoader";
+import type { MuseumData, TimelineEntry, MemoryCardSmall, WallItem, Observation, Evidence, Performance, SpecialExhibit, StudioCaseItem, Cassette, Song, Cabinet, Polaroid, MapPin, Star, Letter, FutureLabel } from "@/lib/museumDataLoader";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,17 +16,18 @@ import { motion, AnimatePresence } from "framer-motion";
 const GALLERY_TABS = [
   { id: 1, name: "G1: The Girl I Met" },
   { id: 2, name: "G2: Person You Became" },
-  { id: 3, name: "G3: Things You Never Notice" },
+  { id: 3, name: "G3: Observations & Walls" },
   { id: 4, name: "G4: Evidence Room" },
-  { id: 5, name: "G5: Library of Us" },
+  { id: 5, name: "G5: Dance Studio" },
   { id: 6, name: "G6: Sound Room" },
-  { id: 7, name: "G7: Little Things" },
-  { id: 8, name: "G8: Thank You" },
-  { id: 9, name: "G9: Map of Memories" },
-  { id: 10, name: "G10: Constellation" },
-  { id: 11, name: "G11: Letters" },
-  { id: 12, name: "G12: Future Wing" },
-  { id: 13, name: "G13: Ending & Finale" },
+  { id: 7, name: "G7: Thank You" },
+  { id: 8, name: "G8: Little Things" },
+  { id: 9, name: "G9: Polaroids" },
+  { id: 10, name: "G10: Map of Memories" },
+  { id: 11, name: "G11: Constellation" },
+  { id: 12, name: "G12: Letters" },
+  { id: 13, name: "G13: Future Wing" },
+  { id: 14, name: "Ending & Finale" },
   { id: 0, name: "🏛 Museum Meta" },
 ];
 
@@ -489,82 +490,291 @@ function Gallery3Editor() {
   );
 }
 
+function VideoUploader({ performance, onChange }: { performance: Performance; onChange: (patch: Partial<Performance>) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [linkText, setLinkText] = useState(performance.videoType === "upload" ? "" : performance.video || "");
+
+  const handleFile = (file: File) => {
+    const MAX_BYTES = 8 * 1024 * 1024; // ~8MB raw → base64 grows ~33%
+    if (file.size > MAX_BYTES) {
+      toast.error("Video too large for direct upload (max ~8MB). Paste a YouTube or Google Drive link instead — it plays inside the same vintage projector.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      onChange({ video: dataUrl, videoType: "upload" });
+      setLinkText("");
+      toast.success("Video reel archived. It will play inside the projector.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const applyLink = (v: string) => {
+    setLinkText(v);
+    const t = v.trim();
+    if (!t) { onChange({ video: null, videoType: "none" }); return; }
+    const isYt = /youtube\.com|youtu\.be/.test(t);
+    const isDrive = /drive\.google\.com/.test(t);
+    onChange({ video: t, videoType: isYt ? "youtube" : isDrive ? "drive" : "upload" });
+  };
+
+  const hasUpload = performance.videoType === "upload" && performance.video?.startsWith("data:");
+
+  return (
+    <div className="space-y-2 p-3 bg-amber-50/50 border border-amber-200 rounded">
+      <label className="text-xs font-medium text-gray-600">Performance Video (MP4 upload, YouTube link, or Drive link)</label>
+      <div className="flex items-center gap-2 flex-wrap">
+        <button type="button" onClick={() => fileRef.current?.click()} className="px-3 py-1 text-xs bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded transition-colors">
+          {hasUpload ? "Replace MP4" : "Upload MP4"}
+        </button>
+        {performance.video && (
+          <button type="button" onClick={() => { onChange({ video: null, videoType: "none" }); setLinkText(""); }} className="px-3 py-1 text-xs bg-red-50 hover:bg-red-100 border border-red-300 rounded transition-colors">
+            Remove Video
+          </button>
+        )}
+        <span className="text-[11px] text-gray-500">
+          {performance.videoType === "none" || !performance.video ? "No footage archived yet" : performance.videoType === "upload" ? "Archived: uploaded reel" : performance.videoType === "youtube" ? "Archived: YouTube reel" : "Archived: Drive reel"}
+        </span>
+      </div>
+      <input ref={fileRef} type="file" accept="video/mp4,video/webm,video/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
+      <input
+        type="text"
+        value={linkText}
+        onChange={(e) => applyLink(e.target.value)}
+        placeholder="…or paste a YouTube / Google Drive link"
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+      />
+      {hasUpload && (
+        <video src={performance.video!} controls className="w-full max-h-40 rounded border border-gray-300 bg-black" />
+      )}
+      <p className="text-[10px] text-gray-400">Tip: direct uploads are stored inside the museum file (max ~8MB). For longer performances, an unlisted YouTube or Drive link keeps the museum light — visitors still watch it inside the vintage projector.</p>
+    </div>
+  );
+}
+
 function Gallery4Editor() {
   const { data, setData } = useCurator();
   const g4 = data.gallery4;
 
+  const setG4 = (patch: Partial<MuseumData["gallery4"]>) => {
+    setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, ...patch } }));
+  };
+
+  const updatePerf = (idx: number, patch: Partial<Performance>) => {
+    const items = [...g4.performances];
+    items[idx] = { ...items[idx], ...patch };
+    setG4({ performances: items });
+  };
+
+  const handleDragEnd = (result: any) => {
+    if (!result.destination) return;
+    const items = Array.from(g4.performances);
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
+    setG4({ performances: items });
+  };
+
+  const addPerformance = () => {
+    const newPerf: Performance = {
+      id: `perf-${Date.now()}`,
+      title: "New Performance",
+      year: "",
+      description: "",
+      location: "",
+      memory: "",
+      curatorNote: "",
+      quote: "",
+      thumbnail: null,
+      video: null,
+      videoType: "none",
+      keywords: [],
+    };
+    setG4({ performances: [...g4.performances, newPerf] });
+  };
+
+  const removePerformance = (idx: number) => {
+    const removed = g4.performances[idx];
+    setG4({
+      performances: g4.performances.filter((_, i) => i !== idx),
+      specialExhibits: g4.specialExhibits.map((sx) => (sx.performanceId === removed.id ? { ...sx, performanceId: "" } : sx)),
+    });
+  };
+
   return (
     <div className="space-y-6">
-      <SectionHeader title="Gallery 4: The Library of Us — Books, Quotes, Annotations" />
-      
-      {/* Books */}
-      {g4.books.map((book, idx) => (
-        <div key={book.id} className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
-          <h4 className="text-sm font-semibold text-gray-700">{book.title}</h4>
-          <div className="grid grid-cols-2 gap-3">
-            <EditableField label="Title" value={book.title} onChange={(v) => {
-              const items = [...g4.books]; items[idx] = { ...items[idx], title: v };
-              setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, books: items } }));
-            }} />
-            <EditableField label="By" value={book.by} onChange={(v) => {
-              const items = [...g4.books]; items[idx] = { ...items[idx], by: v };
-              setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, books: items } }));
-            }} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <EditableField label="Color" value={book.color} onChange={(v) => {
-              const items = [...g4.books]; items[idx] = { ...items[idx], color: v };
-              setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, books: items } }));
-            }} type="color" />
-            <EditableField label="Quote" value={book.quote} onChange={(v) => {
-              const items = [...g4.books]; items[idx] = { ...items[idx], quote: v };
-              setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, books: items } }));
-            }} />
-          </div>
-          <EditableField label="Note/Annotation" value={book.note} onChange={(v) => {
-            const items = [...g4.books]; items[idx] = { ...items[idx], note: v };
-            setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, books: items } }));
-          }} multiline />
-          <KeywordsEditor keywords={book.keywords} onChange={(kws) => {
-            const items = [...g4.books]; items[idx] = { ...items[idx], keywords: kws };
-            setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, books: items } }));
-          }} />
-          <ImageUploader initialImage={book.coverImage} onImageChange={(img) => {
-            const items = [...g4.books]; items[idx] = { ...items[idx], coverImage: img };
-            setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, books: items } }));
-          }} label="Book Cover Image" />
-        </div>
-      ))}
+      <SectionHeader title="Gallery 4: The Dance Studio of Her Story — Performances, Exhibits, Studio Case" />
 
-      {/* Quote Wall */}
+      {/* Room texts */}
       <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700">Quote Wall</h4>
-        {g4.quoteWall.map((item, idx) => (
-          <div key={idx} className="space-y-2">
-            <EditableField label="Quote" value={item.quote} onChange={(v) => {
-              const items = [...g4.quoteWall]; items[idx] = { ...items[idx], quote: v };
-              setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, quoteWall: items } }));
-            }} multiline />
-            <EditableField label="Why" value={item.why} onChange={(v) => {
-              const items = [...g4.quoteWall]; items[idx] = { ...items[idx], why: v };
-              setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, quoteWall: items } }));
+        <h4 className="text-sm font-semibold text-gray-700">Room Texts</h4>
+        <div className="grid grid-cols-2 gap-3">
+          <EditableField label="Room Title" value={g4.roomTitle} onChange={(v) => setG4({ roomTitle: v })} />
+          <EditableField label="Room Subtitle" value={g4.roomSubtitle} onChange={(v) => setG4({ roomSubtitle: v })} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <EditableField label="Performance Wall Title" value={g4.wallTitle} onChange={(v) => setG4({ wallTitle: v })} />
+          <EditableField label="Wall Hint (small caption)" value={g4.wallHint} onChange={(v) => setG4({ wallHint: v })} />
+        </div>
+        <EditableField label="Centerpiece Title" value={g4.centerpieceTitle} onChange={(v) => setG4({ centerpieceTitle: v })} />
+        <EditableField label="Centerpiece Text" value={g4.centerpieceText} onChange={(v) => setG4({ centerpieceText: v })} multiline />
+        <div className="grid grid-cols-2 gap-3">
+          <EditableField label="Left Chair Label" value={g4.reservedChairLeft} onChange={(v) => setG4({ reservedChairLeft: v })} />
+          <EditableField label="Right Chair Label" value={g4.reservedChairRight} onChange={(v) => setG4({ reservedChairRight: v })} />
+        </div>
+        <EditableField label="Reserved Chairs Quote" value={g4.reservedChairQuote} onChange={(v) => setG4({ reservedChairQuote: v })} multiline />
+      </div>
+
+      {/* Performances — drag to reorder */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700 flex items-center justify-between">
+          <span>Archived Performances (drag to reorder · unlimited)</span>
+          <button type="button" onClick={addPerformance} className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded">
+            + Add Performance
+          </button>
+        </h4>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="performances">
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-3">
+                {g4.performances.map((p, idx) => (
+                  <Draggable key={p.id} draggableId={p.id} index={idx}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`p-4 bg-white rounded-lg border shadow-sm transition-all ${snapshot.isDragging ? "shadow-lg border-amber-400" : "border-gray-200"}`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <span {...provided.dragHandleProps} className="cursor-grab select-none text-gray-400 text-sm" title="Drag to reorder">⠿ Reel {String(idx + 1).padStart(2, "0")}</span>
+                          <button type="button" onClick={() => removePerformance(idx)} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+                            Delete
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <EditableField label="Title" value={p.title} onChange={(v) => updatePerf(idx, { title: v })} />
+                          <EditableField label="Year" value={p.year} onChange={(v) => updatePerf(idx, { year: v })} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <EditableField label="Location" value={p.location} onChange={(v) => updatePerf(idx, { location: v })} />
+                          <EditableField label="Optional Quote" value={p.quote} onChange={(v) => updatePerf(idx, { quote: v })} />
+                        </div>
+                        <EditableField label="Description" value={p.description} onChange={(v) => updatePerf(idx, { description: v })} multiline />
+                        <EditableField label="Optional Memory" value={p.memory} onChange={(v) => updatePerf(idx, { memory: v })} multiline rows={2} />
+                        <EditableField label="Curator Note (optional)" value={p.curatorNote} onChange={(v) => updatePerf(idx, { curatorNote: v })} />
+                        <div className="mt-3 space-y-3">
+                          <ImageUploader initialImage={p.thumbnail} onImageChange={(img) => updatePerf(idx, { thumbnail: img })} label="Thumbnail (archival still)" />
+                          <VideoUploader performance={p} onChange={(patch) => updatePerf(idx, patch)} />
+                        </div>
+                        <div className="mt-3">
+                          <KeywordsEditor keywords={p.keywords} onChange={(kws) => updatePerf(idx, { keywords: kws })} />
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
+
+      {/* Special Exhibits */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700 flex items-center justify-between">
+          <span>Special Exhibits (editable collections)</span>
+          <button
+            type="button"
+            onClick={() => setG4({ specialExhibits: [...g4.specialExhibits, { id: `sx-${Date.now()}`, label: "New Collection", performanceId: "", note: "" }] })}
+            className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded"
+          >
+            + Add Exhibit
+          </button>
+        </h4>
+        {g4.specialExhibits.map((sx, idx) => (
+          <div key={sx.id} className="p-3 border border-gray-200 rounded space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400">Collection {String(idx + 1).padStart(2, "0")}</span>
+              <button type="button" onClick={() => setG4({ specialExhibits: g4.specialExhibits.filter((_, i) => i !== idx) })} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+                Delete
+              </button>
+            </div>
+            <EditableField label="Label" value={sx.label} onChange={(v) => {
+              const items = [...g4.specialExhibits]; items[idx] = { ...items[idx], label: v };
+              setG4({ specialExhibits: items });
             }} />
+            <EditableField label="Note" value={sx.note} onChange={(v) => {
+              const items = [...g4.specialExhibits]; items[idx] = { ...items[idx], note: v };
+              setG4({ specialExhibits: items });
+            }} multiline rows={2} />
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-600">Linked Performance (opens in projector)</label>
+              <select
+                value={sx.performanceId}
+                onChange={(e) => {
+                  const items = [...g4.specialExhibits]; items[idx] = { ...items[idx], performanceId: e.target.value };
+                  setG4({ specialExhibits: items });
+                }}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              >
+                <option value="">— none (shows the note only) —</option>
+                {g4.performances.map((p) => (
+                  <option key={p.id} value={p.id}>{p.title} ({p.year})</option>
+                ))}
+              </select>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Hidden Note */}
+      {/* Studio Case */}
       <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700">Library Notes</h4>
-        <EditableField label="Hidden Note" value={g4.hiddenNote} onChange={(v) => {
-          setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, hiddenNote: v } }));
-        }} multiline />
-        <EditableField label="Reserved Chair Text" value={g4.reservedChairText} onChange={(v) => {
-          setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, reservedChairText: v } }));
-        }} multiline />
-        <EditableField label="Hidden Compartment Note" value={g4.hiddenCompartmentNote} onChange={(v) => {
-          setData((prev) => ({ ...prev, gallery4: { ...prev.gallery4, hiddenCompartmentNote: v } }));
-        }} multiline />
+        <h4 className="text-sm font-semibold text-gray-700 flex items-center justify-between">
+          <span>The Studio Case (glass display artifacts)</span>
+          <button
+            type="button"
+            onClick={() => setG4({ studioCase: [...g4.studioCase, { id: `sc-${Date.now()}`, emoji: "🩰", label: "New Artifact", note: "" }] })}
+            className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded"
+          >
+            + Add Artifact
+          </button>
+        </h4>
+        {g4.studioCase.map((item, idx) => (
+          <div key={item.id} className="p-3 border border-gray-200 rounded space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400">Artifact {String(idx + 1).padStart(2, "0")}</span>
+              <button type="button" onClick={() => setG4({ studioCase: g4.studioCase.filter((_, i) => i !== idx) })} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+                Delete
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <EditableField label="Emoji" value={item.emoji} onChange={(v) => {
+                const items = [...g4.studioCase]; items[idx] = { ...items[idx], emoji: v };
+                setG4({ studioCase: items });
+              }} />
+              <div className="col-span-2">
+                <EditableField label="Label" value={item.label} onChange={(v) => {
+                  const items = [...g4.studioCase]; items[idx] = { ...items[idx], label: v };
+                  setG4({ studioCase: items });
+                }} />
+              </div>
+            </div>
+            <EditableField label="Note (shown when tapped)" value={item.note} onChange={(v) => {
+              const items = [...g4.studioCase]; items[idx] = { ...items[idx], note: v };
+              setG4({ studioCase: items });
+            }} multiline rows={2} />
+          </div>
+        ))}
+      </div>
+
+      {/* Hidden details */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">Hidden Details</h4>
+        <EditableField label="Rehearsal Diary Note (hidden)" value={g4.hiddenNote} onChange={(v) => setG4({ hiddenNote: v })} multiline rows={2} />
+        <EditableField label="Hidden Compartment Note (appears after opening 4 frames)" value={g4.hiddenCompartmentNote} onChange={(v) => setG4({ hiddenCompartmentNote: v })} multiline rows={2} />
+        <EditableField label="Forgotten Hairpin Note" value={g4.hairpinNote} onChange={(v) => setG4({ hairpinNote: v })} multiline rows={2} />
+        <EditableField label="Folded Schedule Note" value={g4.scheduleNote} onChange={(v) => setG4({ scheduleNote: v })} multiline rows={2} />
       </div>
     </div>
   );
@@ -1404,15 +1614,16 @@ export default function CuratorMode() {
             {activeGallery === 2 && <Gallery2Editor />}
             {activeGallery === 3 && <Gallery3Editor />}
             {activeGallery === 4 && <Gallery4Editor />}
-            {activeGallery === 5 && <Gallery5Editor />}
-            {activeGallery === 6 && <Gallery6Editor />}
-            {activeGallery === 7 && <Gallery7Editor />}
-            {activeGallery === 8 && <Gallery8Editor />}
-            {activeGallery === 9 && <Gallery9Editor />}
-            {activeGallery === 10 && <Gallery10Editor />}
-            {activeGallery === 11 && <Gallery11Editor />}
-            {activeGallery === 12 && <Gallery12Editor />}
-            {activeGallery === 13 && <Gallery13Editor />}
+            {activeGallery === 5 && <Gallery4Editor />}
+            {activeGallery === 6 && <Gallery5Editor />}
+            {activeGallery === 7 && <Gallery6Editor />}
+            {activeGallery === 8 && <Gallery7Editor />}
+            {activeGallery === 9 && <Gallery8Editor />}
+            {activeGallery === 10 && <Gallery9Editor />}
+            {activeGallery === 11 && <Gallery10Editor />}
+            {activeGallery === 12 && <Gallery11Editor />}
+            {activeGallery === 13 && <Gallery12Editor />}
+            {activeGallery === 14 && <Gallery13Editor />}
             {activeGallery === 0 && <MuseumMetaEditor />}
           </motion.div>
         </AnimatePresence>
