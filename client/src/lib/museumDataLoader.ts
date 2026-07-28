@@ -260,10 +260,41 @@ function saveToStorage(data: MuseumData): void {
   }
 }
 
+// Validate cached data has expected gallery structure (prevents crashes when
+// the museum.json schema changes between deployments).
+function validateMuseumData(data: any): boolean {
+  try {
+    return (
+      data && data.metadata &&
+      Array.isArray(data.gallery1?.timeline) &&
+      Array.isArray(data.gallery2?.observations) &&
+      Array.isArray(data.gallery3?.evidence) &&
+      Array.isArray(data.gallery4?.performances) &&
+      Array.isArray(data.gallery5?.cassettes) &&
+      Array.isArray(data.gallery6?.thankYouNotes) &&
+      Array.isArray(data.gallery7?.cabinets) &&
+      Array.isArray(data.gallery8?.polaroids) &&
+      Array.isArray(data.gallery9?.mapPins) &&
+      Array.isArray(data.gallery10?.stars) &&
+      Array.isArray(data.gallery11?.letters) &&
+      Array.isArray(data.gallery12?.futureLabels) &&
+      Array.isArray(data.finale?.corridorFrames) &&
+      Array.isArray(data.guide?.birdFacts) &&
+      Array.isArray(data.museum?.rules)
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Get the current active museum data (cached > default)
 export function getMuseumData(): MuseumData {
   const cached = loadFromStorage();
-  if (cached) return cached;
+  // Only use cached data if it passes schema validation (prevents crashes
+  // when the museum.json structure changes between deployments).
+  if (cached && validateMuseumData(cached)) return cached;
+  // Invalidate stale cached data so the next load uses fresh defaults.
+  if (cached) localStorage.removeItem(STORAGE_KEY);
   return defaultMuseumData as MuseumData;
 }
 
@@ -334,18 +365,18 @@ export interface SearchItem {
 export function buildSearchIndex(): SearchItem[] {
   const data = getMuseumData();
   const items: any[] = [];
-  data.gallery1.timeline.forEach((t) => items.push({ id: `tl-${t.year}`, gallery: "Gallery 1 · The Girl I Met", galleryAnchor: "gallery-1", title: `${t.year} — ${t.title}`, snippet: t.text, keywords: t.keywords }));
-  data.gallery1.memoryCards.forEach((m) => items.push({ id: m.no, gallery: "Gallery 1 · The Girl I Met", galleryAnchor: "gallery-1", title: m.no, snippet: m.text, keywords: m.keywords }));
-  data.gallery2.walls.forEach((w) => items.push({ id: w.id, gallery: "Gallery 2 · The Person You Became", galleryAnchor: "gallery-2", title: w.title, snippet: w.lines.join(" "), keywords: w.keywords }));
-  data.gallery2.observations.forEach((o) => items.push({ id: o.id, gallery: "Gallery 3 · The Things You Never Notice", galleryAnchor: "gallery-3", title: o.frame, snippet: o.text, keywords: o.keywords }));
-  data.gallery3.evidence.forEach((e) => items.push({ id: e.id, gallery: "Gallery 4 · The Evidence Room", galleryAnchor: "gallery-4", title: e.title, snippet: e.context, keywords: e.keywords }));
-  data.gallery4.performances.forEach((p) => items.push({ id: p.id, gallery: "Gallery 5 · The Dance Studio of Her Story", galleryAnchor: "gallery-5", title: p.title, snippet: p.description, keywords: p.keywords }));
-  data.gallery5.cassettes.forEach((c) => items.push({ id: c.id, gallery: "Gallery 6 · The Sound Room", galleryAnchor: "gallery-6", title: `Cassette: ${c.label}`, snippet: c.why, keywords: c.keywords }));
-  data.gallery5.songs.forEach((s) => items.push({ id: s.id, gallery: "Gallery 6 · The Sound Room", galleryAnchor: "gallery-6", title: s.title, snippet: s.why, keywords: s.keywords }));
-  data.gallery7.cabinets.forEach((c) => items.push({ id: c.id, gallery: "Gallery 7 · The Little Things Room", galleryAnchor: "gallery-7", title: c.label, snippet: c.explanation, keywords: c.keywords }));
-  data.gallery9.mapPins.forEach((m) => items.push({ id: m.id, gallery: "Gallery 9 · The Map of Memories", galleryAnchor: "gallery-9", title: m.place, snippet: m.memory, keywords: m.keywords }));
-  data.gallery10.stars.forEach((s) => items.push({ id: s.id, gallery: "Gallery 10 · The Constellation Room", galleryAnchor: "gallery-10", title: "A star-memory", snippet: s.memory, keywords: s.keywords }));
-  data.gallery11.letters.forEach((l) => items.push({ id: l.id, gallery: "Gallery 11 · Letters Never Sent", galleryAnchor: "gallery-11", title: l.title, snippet: l.body[0], keywords: l.keywords }));
+  (data.gallery1?.timeline || []).forEach((t) => items.push({ id: `tl-${t.year}`, gallery: "Gallery 1 · The Girl I Met", galleryAnchor: "gallery-1", title: `${t.year} — ${t.title}`, snippet: t.text, keywords: t.keywords }));
+  (data.gallery1?.memoryCards || []).forEach((m) => items.push({ id: m.no, gallery: "Gallery 1 · The Girl I Met", galleryAnchor: "gallery-1", title: m.no, snippet: m.text, keywords: m.keywords }));
+  (data.gallery2?.walls || []).forEach((w) => items.push({ id: w.id, gallery: "Gallery 2 · The Person You Became", galleryAnchor: "gallery-2", title: w.title, snippet: w.lines.join(" "), keywords: w.keywords }));
+  (data.gallery2?.observations || []).forEach((o) => items.push({ id: o.id, gallery: "Gallery 3 · The Things You Never Notice", galleryAnchor: "gallery-3", title: o.frame, snippet: o.text, keywords: o.keywords }));
+  (data.gallery3?.evidence || []).forEach((e) => items.push({ id: e.id, gallery: "Gallery 4 · The Evidence Room", galleryAnchor: "gallery-4", title: e.title, snippet: e.context, keywords: e.keywords }));
+  (data.gallery4?.performances || []).forEach((p) => items.push({ id: p.id, gallery: "Gallery 5 · The Dance Studio of Her Story", galleryAnchor: "gallery-5", title: p.title, snippet: p.description, keywords: p.keywords }));
+  (data.gallery5?.cassettes || []).forEach((c) => items.push({ id: c.id, gallery: "Gallery 6 · The Sound Room", galleryAnchor: "gallery-6", title: `Cassette: ${c.label}`, snippet: c.why, keywords: c.keywords }));
+  (data.gallery5?.songs || []).forEach((s) => items.push({ id: s.id, gallery: "Gallery 6 · The Sound Room", galleryAnchor: "gallery-6", title: s.title, snippet: s.why, keywords: s.keywords }));
+  (data.gallery7?.cabinets || []).forEach((c) => items.push({ id: c.id, gallery: "Gallery 7 · The Little Things Room", galleryAnchor: "gallery-7", title: c.label, snippet: c.explanation, keywords: c.keywords }));
+  (data.gallery9?.mapPins || []).forEach((m) => items.push({ id: m.id, gallery: "Gallery 9 · The Map of Memories", galleryAnchor: "gallery-9", title: m.place, snippet: m.memory, keywords: m.keywords }));
+  (data.gallery10?.stars || []).forEach((s) => items.push({ id: s.id, gallery: "Gallery 10 · The Constellation Room", galleryAnchor: "gallery-10", title: "A star-memory", snippet: s.memory, keywords: s.keywords }));
+  (data.gallery11?.letters || []).forEach((l) => items.push({ id: l.id, gallery: "Gallery 11 · Letters Never Sent", galleryAnchor: "gallery-11", title: l.title, snippet: l.body?.[0], keywords: l.keywords }));
   return items;
 }
 
@@ -359,11 +390,11 @@ export interface MemoryCard {
 export function allMemories(): MemoryCard[] {
   const data = getMuseumData();
   const pool: MemoryCard[] = [];
-  data.gallery1.timeline.forEach((t) => pool.push({ title: `${t.year} — ${t.title}`, text: t.text, gallery: "The Girl I Met", anchor: "gallery-1" }));
-  data.gallery1.memoryCards.forEach((m) => pool.push({ title: m.no, text: m.text, gallery: "The Girl I Met", anchor: "gallery-1" }));
-  data.gallery2.observations.forEach((o) => pool.push({ title: o.frame, text: o.text, gallery: "The Things You Never Notice", anchor: "gallery-3" }));
-  data.gallery3.evidence.forEach((e) => pool.push({ title: e.title, text: e.context, gallery: "The Evidence Room", anchor: "gallery-4" }));
-  data.gallery4.performances.forEach((p) => pool.push({ title: p.title, text: p.description, gallery: "The Dance Studio of Her Story", anchor: "gallery-5" }));
-  data.gallery10.stars.forEach((s) => pool.push({ title: "A star-memory", text: s.memory, gallery: "The Constellation Room", anchor: "gallery-10" }));
+  (data.gallery1?.timeline || []).forEach((t) => pool.push({ title: `${t.year} — ${t.title}`, text: t.text, gallery: "The Girl I Met", anchor: "gallery-1" }));
+  (data.gallery1?.memoryCards || []).forEach((m) => pool.push({ title: m.no, text: m.text, gallery: "The Girl I Met", anchor: "gallery-1" }));
+  (data.gallery2?.observations || []).forEach((o) => pool.push({ title: o.frame, text: o.text, gallery: "The Things You Never Notice", anchor: "gallery-3" }));
+  (data.gallery3?.evidence || []).forEach((e) => pool.push({ title: e.title, text: e.context, gallery: "The Evidence Room", anchor: "gallery-4" }));
+  (data.gallery4?.performances || []).forEach((p) => pool.push({ title: p.title, text: p.description, gallery: "The Dance Studio of Her Story", anchor: "gallery-5" }));
+  (data.gallery10?.stars || []).forEach((s) => pool.push({ title: "A star-memory", text: s.memory, gallery: "The Constellation Room", anchor: "gallery-10" }));
   return pool;
 }
