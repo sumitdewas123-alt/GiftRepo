@@ -109,14 +109,30 @@ function ImageUploader({ initialImage, onImageChange, label }: { initialImage: s
 function AudioUploader({ initialAudio, onAudioChange, label }: { initialAudio: string | null; onAudioChange: (audio: string | null) => void; label: string }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState(initialAudio);
-  useEffect(() => { setPreview(initialAudio); }, [initialAudio]);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { setPreview(initialAudio); setError(null); }, [initialAudio]);
+
+  const MAX_SIZE_MB = 2; // 2MB limit to stay well under localStorage quota
 
   const handleFile = (file: File) => {
+    setError(null);
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      setError(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max ${MAX_SIZE_MB}MB. Use a shorter clip or compress the audio.`);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
+      // Verify the data URL is valid
+      if (!dataUrl || !dataUrl.startsWith('data:audio/')) {
+        setError('Failed to read audio file. Try a different format (MP3, WAV, OGG).');
+        return;
+      }
       setPreview(dataUrl);
       onAudioChange(dataUrl);
+    };
+    reader.onerror = () => {
+      setError('Failed to read audio file.');
     };
     reader.readAsDataURL(file);
   };
@@ -124,6 +140,7 @@ function AudioUploader({ initialAudio, onAudioChange, label }: { initialAudio: s
   return (
     <div className="space-y-2">
       <label className="text-xs font-medium text-gray-600">{label}</label>
+      {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="flex items-center gap-3">
         {preview && (
           <audio src={preview} controls className="h-8 max-w-48" />
@@ -139,7 +156,7 @@ function AudioUploader({ initialAudio, onAudioChange, label }: { initialAudio: s
           {preview && (
             <button
               type="button"
-              onClick={() => { setPreview(null); onAudioChange(null); }}
+              onClick={() => { setPreview(null); onAudioChange(null); setError(null); }}
               className="px-3 py-1 text-xs bg-red-50 hover:bg-red-100 border border-red-300 rounded transition-colors"
             >
               Remove
@@ -154,6 +171,7 @@ function AudioUploader({ initialAudio, onAudioChange, label }: { initialAudio: s
           onChange={(e) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
         />
       </div>
+      {!preview && !error && <p className="text-[10px] text-gray-400">Max {MAX_SIZE_MB}MB. Supports MP3, WAV, OGG.</p>}
     </div>
   );
 }
