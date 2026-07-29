@@ -7,6 +7,7 @@ import { useMuseum } from "@/contexts/MuseumContext";
 import { soundEngine } from "@/lib/soundEngine";
 import { Play, Check } from "lucide-react";
 import { toast } from "sonner";
+import type { Cassette } from "@/lib/museumData"; // for audioFile field access
 
 const SOUND_BG = "/manus-storage/sound-room_86c493c6.png";
 const BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
@@ -38,19 +39,36 @@ export default function Gallery6Sound() {
             const heard = songsHeard.has(c.id);
             const playing = nowPlaying === c.id;
             return (
-              <button
+              <div
                 key={c.id}
-                onClick={() => listen(c.id)}
-                aria-label={`Play cassette: ${c.label}`}
                 className={`group w-40 border border-[#c9a45c]/40 bg-gradient-to-b from-[#3a3226] to-[#241a0e] p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-[#c9a45c] focus:outline-none focus:ring-2 focus:ring-[#c9a45c] ${playing ? "shadow-[0_0_25px_rgba(201,164,92,0.3)]" : ""}`}
               >
-                <div className="mx-auto flex h-10 w-24 items-center justify-around rounded-sm border border-[#c9a45c]/40 bg-[#171208] px-2" aria-hidden="true">
-                  <span className={`h-4 w-4 rounded-full border border-[#c9a45c]/60 ${playing ? "animate-spin" : ""}`} style={{ borderTopColor: "#e8cd8c" }} />
-                  <span className={`h-4 w-4 rounded-full border border-[#c9a45c]/60 ${playing ? "animate-spin" : ""}`} style={{ borderTopColor: "#e8cd8c" }} />
-                </div>
-                <p className="mt-2 font-hand text-xl text-[#e8cd8c]">"{c.label}" {heard && "✓"}</p>
-                <p className="mt-1 font-body text-xs italic leading-snug text-[#d8c9a5]">{c.why}</p>
-              </button>
+                <button
+                  onClick={() => listen(c.id)}
+                  aria-label={`Play cassette: ${c.label}`}
+                >
+                  <div className="mx-auto flex h-10 w-24 items-center justify-around rounded-sm border border-[#c9a45c]/40 bg-[#171208] px-2" aria-hidden="true">
+                    <span className={`h-4 w-4 rounded-full border border-[#c9a45c]/60 ${playing ? "animate-spin" : ""}`} style={{ borderTopColor: "#e8cd8c" }} />
+                    <span className={`h-4 w-4 rounded-full border border-[#c9a45c]/60 ${playing ? "animate-spin" : ""}`} style={{ borderTopColor: "#e8cd8c" }} />
+                  </div>
+                  <p className="mt-2 font-hand text-xl text-[#e8cd8c]">"{c.label}" {heard && "✓"}</p>
+                  <p className="mt-1 font-body text-xs italic leading-snug text-[#d8c9a5]">{c.why}</p>
+                </button>
+                {/* Play uploaded audio if present */}
+                {(c as any).audioFile && playing && (
+                  <audio
+                    src={(c as any).audioFile}
+                    autoPlay
+                    controls={false}
+                    className="absolute opacity-0 pointer-events-none"
+                    ref={(el) => {
+                      if (el && playing) { el.volume = 0.5; el.play().catch(() => {}); }
+                      if (el && !playing) { el.pause(); }
+                    }}
+                    onEnded={() => setNowPlaying(null)}
+                  />
+                )}
+              </div>
             );
           })}
         </div>

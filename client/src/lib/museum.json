@@ -348,7 +348,8 @@
           "left": "6%",
           "rotate": -3
         },
-        "image": null
+        "image": null,
+        "audio": null
       },
       {
         "id": "ev-chats",
@@ -370,7 +371,8 @@
           "left": "40%",
           "rotate": 2
         },
-        "image": null
+        "image": null,
+        "audio": null
       },
       {
         "id": "ev-voice",
@@ -389,7 +391,8 @@
           "left": "12%",
           "rotate": -2
         },
-        "image": null
+        "image": null,
+        "audio": null
       },
       {
         "id": "ev-trips",
@@ -409,7 +412,8 @@
           "left": "48%",
           "rotate": 3
         },
-        "image": null
+        "image": null,
+        "audio": null
       },
       {
         "id": "ev-food",
@@ -429,7 +433,8 @@
           "left": "72%",
           "rotate": -1
         },
-        "image": null
+        "image": null,
+        "audio": null
       },
       {
         "id": "ev-debates",
@@ -450,7 +455,8 @@
           "left": "75%",
           "rotate": 2
         },
-        "image": null
+        "image": null,
+        "audio": null
       }
     ],
     "laughCounter": [

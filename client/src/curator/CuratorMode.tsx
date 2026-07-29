@@ -105,6 +105,59 @@ function ImageUploader({ initialImage, onImageChange, label }: { initialImage: s
   );
 }
 
+// Audio file uploader — stores audio as base64 data URL (like ImageUploader for images).
+function AudioUploader({ initialAudio, onAudioChange, label }: { initialAudio: string | null; onAudioChange: (audio: string | null) => void; label: string }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState(initialAudio);
+  useEffect(() => { setPreview(initialAudio); }, [initialAudio]);
+
+  const handleFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setPreview(dataUrl);
+      onAudioChange(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-medium text-gray-600">{label}</label>
+      <div className="flex items-center gap-3">
+        {preview && (
+          <audio src={preview} controls className="h-8 max-w-48" />
+        )}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="px-3 py-1 text-xs bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded transition-colors"
+          >
+            {preview ? "Replace" : "Upload"}
+          </button>
+          {preview && (
+            <button
+              type="button"
+              onClick={() => { setPreview(null); onAudioChange(null); }}
+              className="px-3 py-1 text-xs bg-red-50 hover:bg-red-100 border border-red-300 rounded transition-colors"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={(e) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function EditableField({ label, value, onChange, type = "text", multiline = false, placeholder, rows = 3 }: {
   label: string; value: string; onChange: (v: string) => void; type?: string; multiline?: boolean; placeholder?: string; rows?: number;
 }) {
@@ -456,6 +509,10 @@ function Gallery3Editor() {
             const items = [...g3.evidence]; items[idx] = { ...items[idx], image: img };
             setData((prev) => ({ ...prev, gallery3: { ...prev.gallery3, evidence: items } }));
           }} label="Evidence Photo/Screenshot" />
+          <AudioUploader initialAudio={ev.audio} onAudioChange={(audio) => {
+            const items = [...g3.evidence]; items[idx] = { ...items[idx], audio: audio };
+            setData((prev) => ({ ...prev, gallery3: { ...prev.gallery3, evidence: items } }));
+          }} label="Evidence Audio (voice notes, recordings, etc.)" />
         </div>
       ))}
 
@@ -811,6 +868,10 @@ function Gallery5Editor() {
               const items = [...g5.cassettes]; items[idx] = { ...items[idx], keywords: kws };
               setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, cassettes: items } }));
             }} />
+            <AudioUploader initialAudio={cassette.audioFile} onAudioChange={(audio) => {
+              const items = [...g5.cassettes]; items[idx] = { ...items[idx], audioFile: audio };
+              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, cassettes: items } }));
+            }} label="Cassette Audio File" />
           </div>
         ))}
       </div>

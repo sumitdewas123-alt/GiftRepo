@@ -63,6 +63,7 @@ export interface Evidence {
   keywords: string[];
   pin: { top: string; left: string; rotate: number };
   image: string | null;
+  audio: string | null;
 }
 export interface Book {
   id: string;

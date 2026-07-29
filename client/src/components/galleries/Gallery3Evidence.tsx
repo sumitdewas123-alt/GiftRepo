@@ -85,6 +85,9 @@ export default function Gallery4Evidence() {
           {selected?.image && (
             <img src={selected.image} alt={selected.title} className="max-h-64 w-full border border-[oklch(0.72_0.09_80/40%)] object-contain shadow-md" />
           )}
+          {selected?.audio && (
+            <audio src={selected.audio} controls className="w-full mt-3" />
+          )}
           <p className="font-body leading-relaxed">{selected?.context}</p>
           <p className="plaque mt-2 self-start">evidence · case no. 2015-∞</p>
         </DialogContent>
