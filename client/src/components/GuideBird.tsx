@@ -1,6 +1,7 @@
 /* Gilded Archive — the tiny museum guide bird. Appears occasionally, never intrusive. */
 import { useEffect, useState } from "react";
-import { birdFacts } from "@/lib/museumData";
+import { birdFacts, birdLogoImage } from "@/lib/museumData";
+const DEFAULT_BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
 import { useMuseum } from "@/contexts/MuseumContext";
 
 export default function GuideBird() {
@@ -35,7 +36,7 @@ export default function GuideBird() {
     >
       <div className="relative border border-border bg-card/95 p-4 shadow-xl backdrop-blur-md">
         <div className="flex items-start gap-3">
-          <img src="/manus-storage/logo-bird_bdea2d3a.png" alt="" className="h-9 w-9 shrink-0" style={{ animation: "floatSlow 3s ease-in-out infinite" }} />
+          <img src={birdLogoImage || DEFAULT_BIRD} alt="" className="h-9 w-9 shrink-0" style={{ animation: "floatSlow 3s ease-in-out infinite" }} />
           <div>
             <p className="font-display text-[10px] tracking-[0.25em] text-muted-foreground">MUSEUM GUIDE</p>
             <p className="mt-1 font-hand text-lg leading-snug text-foreground">{visible ? fact : ""}</p>

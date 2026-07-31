@@ -137,6 +137,12 @@ export let birdFacts: string[] = d.guide?.birdFacts ?? [];
 export let museumRules: string[] = d.museum?.rules ?? [];
 export let dearChickoLetter: string[] = d.museum?.dearChickoLetter ?? [];
 
+/* Global assets */
+export let birdLogoImage: string | null = d.assets?.birdLogo ?? null;
+export let hallwayBackgroundImage: string | null = d.assets?.hallwayBackground ?? null;
+export let entranceCardImage: string | null = d.assets?.entranceCardImage ?? null;
+export let guestbookHeaderImage: string | null = d.assets?.guestbookHeaderImage ?? null;
+
 /* ---------- Refresh mechanism ---------- */
 function refreshBindings() {
   d = getMuseumData();
@@ -183,6 +189,10 @@ function refreshBindings() {
   birdFacts = d.guide?.birdFacts ?? [];
   museumRules = d.museum?.rules ?? [];
   dearChickoLetter = d.museum?.dearChickoLetter ?? [];
+  birdLogoImage = d.assets?.birdLogo ?? null;
+  hallwayBackgroundImage = d.assets?.hallwayBackground ?? null;
+  entranceCardImage = d.assets?.entranceCardImage ?? null;
+  guestbookHeaderImage = d.assets?.guestbookHeaderImage ?? null;
 }
 
 if (typeof window !== "undefined") {

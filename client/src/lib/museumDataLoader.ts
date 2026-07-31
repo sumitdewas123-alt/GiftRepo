@@ -239,6 +239,12 @@ export interface MuseumData {
     placeholder: string;
     signatures: { name: string; message: string; date: string }[];
   };
+  assets: {
+    birdLogo: string | null;
+    hallwayBackground: string | null;
+    entranceCardImage: string | null;
+    guestbookHeaderImage: string | null;
+  };
 }
 
 // Load cached data or fall back to default JSON
@@ -281,7 +287,8 @@ function validateMuseumData(data: any): boolean {
       Array.isArray(data.gallery12?.futureLabels) &&
       Array.isArray(data.finale?.corridorFrames) &&
       Array.isArray(data.guide?.birdFacts) &&
-      Array.isArray(data.museum?.rules)
+      Array.isArray(data.museum?.rules) &&
+      (data.assets === undefined || typeof data.assets === 'object')
     );
   } catch {
     return false;

@@ -78,12 +78,12 @@ function WallFrame({ text, rotation = 0, size = "sm", note }: { text: string; ro
     >
       <div className="pointer-events-none absolute inset-[3px] border border-[oklch(0.75_0.1_82/40%)]" />
       {!revealed ? (
-        <span className="font-display text-[10px] italic text-[oklch(0.6_0.08_78/60%)]" style={{ animation: "flicker 8s infinite" }}>
+                  <span className="font-display text-sm italic text-[oklch(0.7_0.08_78/70%)]" style={{ animation: "flicker 8s infinite" }}>
           {text.slice(0, 18)}...
         </span>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-[#1d1710]/95 p-2" style={{ animation: "fadeIn 0.8s ease both" }}>
-          <p className="font-hand text-sm text-[oklch(0.85_0.08_85)] leading-snug">{text}</p>
+          <p className="font-hand text-base text-[oklch(0.85_0.08_85)] leading-snug">{text}</p>
         </div>
       )}
       {note && (
@@ -99,8 +99,8 @@ function MuseumSign({ text, subtext }: { text: string; subtext?: string }) {
   return (
     <div className="relative border border-[oklch(0.65_0.09_80/50%)] bg-gradient-to-b from-[#2a2015]/90 to-[#1d1710]/90 px-5 py-3 shadow-lg backdrop-blur-sm">
       <div className="pointer-events-none absolute inset-0 border border-[oklch(0.75_0.1_82/20%)]" />
-      <p className="font-display text-xs tracking-[0.3em] text-[oklch(0.75_0.1_82)] uppercase">{text}</p>
-      {subtext && <p className="mt-1 font-body text-xs italic text-[oklch(0.65_0.06_75)]">{subtext}</p>}
+      <p className="font-display text-sm md:text-base tracking-[0.3em] text-[oklch(0.75_0.1_82)] uppercase">{text}</p>
+      {subtext && <p className="mt-1 font-body text-sm italic text-[oklch(0.65_0.06_75)]">{subtext}</p>}
     </div>
   );
 }
@@ -187,24 +187,24 @@ function HiddenNote({ text, placement }: { text: string; placement: "left" | "ri
   return (
     <button
       onClick={() => setOpen((v) => !v)}
-      className={`group absolute ${placement === "center" ? "left-1/2 -translate-x-1/2" : placement === "left" ? "left-[8%]" : "right-[8%]"} ${placement === "center" ? "bottom-[20%]" : "bottom-[35%]"} z-20`}
+      className={`group absolute ${placement === "center" ? "left-1/2 -translate-x-1/2 bottom-[20%]" : placement === "left" ? "left-[3%] bottom-[35%]" : "right-[2%] bottom-[35%]"} z-20`}
       aria-label="A hidden note"
     >
       {!open ? (
         <span
-          className="inline-block rotate-[-2deg] border border-[oklch(0.65_0.09_80/40%)] bg-[#f6ecd4]/80 px-3 py-1.5 font-hand text-xs text-[#5a4327] shadow-md transition-all duration-300 group-hover:rotate-[1deg] group-hover:shadow-lg"
+          className="inline-block max-w-[8rem] rotate-[-2deg] truncate border border-[oklch(0.65_0.09_80/40%)] bg-[#f6ecd4]/80 px-3 py-1.5 font-hand text-xs text-[#5a4327] shadow-md transition-all duration-300 group-hover:rotate-[1deg] group-hover:shadow-lg"
         >
           {text.slice(0, 20)}...
         </span>
       ) : (
         <div
-          className="sticky-note absolute bottom-full mb-2 w-52 p-3 font-hand text-base leading-snug text-[#4a3c1a]"
+          className={`sticky-note absolute bottom-full mb-2 max-w-[18rem] min-w-[12rem] p-3 font-hand text-base leading-snug text-[#4a3c1a] ${placement === "right" ? "-right-4" : ""}`}
           style={{
             animation: "fadeUp 0.6s ease both",
             transform: `rotate(${Math.random() * 4 - 2}deg)`,
           }}
         >
-          <p>{text}</p>
+          <p className="whitespace-normal">{text}</p>
           <button
             onClick={() => setOpen(false)}
             className="mt-2 text-xs underline opacity-60 focus:outline-none"
@@ -515,7 +515,7 @@ export default function MuseumCorridor({ variant, direction = "next" }: Corridor
       >
         {/* Corridor name plaque */}
         <p
-          className="font-display text-[10px] tracking-[0.4em] text-[oklch(0.55_0.06_70)] uppercase opacity-50"
+          className="font-display text-xs tracking-[0.4em] text-[oklch(0.55_0.06_70)] uppercase opacity-50"
           style={{ animation: "fadeIn 2s ease 0.3s both" }}
         >
           {config.name}
@@ -562,7 +562,7 @@ export default function MuseumCorridor({ variant, direction = "next" }: Corridor
             style={{ animation: "fadeIn 3s ease 1.2s both" }}
           >
             <span className="text-lg text-[oklch(0.55_0.06_70/50%)]" aria-hidden="true">↓</span>
-            <span className="font-display text-[10px] tracking-[0.3em] text-[oklch(0.5_0.05_70/40%)] uppercase">
+            <span className="font-display text-xs tracking-[0.3em] text-[oklch(0.5_0.05_70/40%)] uppercase">
               continue walking
             </span>
           </div>

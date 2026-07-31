@@ -8,10 +8,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMuseum } from "@/contexts/MuseumContext";
 import { soundEngine } from "@/lib/soundEngine";
-import { museumRules, dearChickoLetter } from "@/lib/museumData";
+import { museumRules, dearChickoLetter, birdLogoImage, hallwayBackgroundImage } from "@/lib/museumData";
 
-const HALLWAY = "/manus-storage/museum-hallway_34980189.png";
-const BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
+const DEFAULT_HALLWAY = "/manus-storage/museum-hallway_34980189.png";
+const DEFAULT_BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
 
 const introLines = [
   "This museum is not about achievements.",
@@ -117,7 +117,7 @@ export default function Entrance({ onComplete }: { onComplete: () => void }) {
       <div
         className="pointer-events-none fixed inset-0 bg-cover bg-center transition-opacity duration-[2500ms]"
         style={{
-          backgroundImage: `url(${HALLWAY})`,
+          backgroundImage: `url(${hallwayBackgroundImage || DEFAULT_HALLWAY})`,
           opacity: stage === "dark" ? 0 : stage === "lights" ? 0.35 : stage === "hall" || stage === "doors" ? 1 : 0,
         }}
         aria-hidden="true"
@@ -148,7 +148,7 @@ export default function Entrance({ onComplete }: { onComplete: () => void }) {
             className="absolute left-6 top-6 focus:outline-none focus:ring-2 focus:ring-[#c9a45c] md:left-12 md:top-12"
           >
             <img
-              src={BIRD}
+              src={birdLogoImage || DEFAULT_BIRD}
               alt=""
               className={`h-12 w-12 transition-transform duration-500 ${birdAsleep ? "rotate-12 opacity-60" : ""}`}
               style={{ animation: birdAsleep ? "none" : "floatSlow 4s ease-in-out infinite" }}
@@ -323,7 +323,7 @@ export default function Entrance({ onComplete }: { onComplete: () => void }) {
 
             {stage === "ready" && (
               <div className="flex flex-col items-center" style={{ animation: "fadeUp 1s ease both" }}>
-                <img src={BIRD} alt="The Archivist" className="h-16 w-16" style={{ animation: "floatSlow 4s ease-in-out infinite" }} />
+                <img src={birdLogoImage || DEFAULT_BIRD} alt="The Archivist" className="h-16 w-16" style={{ animation: "floatSlow 4s ease-in-out infinite" }} />
                 <div className="mt-4 border border-[#8a6f3c]/40 bg-[#f8f2e2] px-6 py-3 font-hand text-2xl text-[#4a3c1a] shadow-md">
                   Ready?
                 </div>

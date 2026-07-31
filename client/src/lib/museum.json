@@ -1713,5 +1713,11 @@
     "subtitle": "Leave a note in the margin. The museum reads everything.",
     "placeholder": "Write something for the curator...",
     "signatures": []
+  },
+  "assets": {
+    "birdLogo": null,
+    "hallwayBackground": null,
+    "entranceCardImage": null,
+    "guestbookHeaderImage": null
   }
 }

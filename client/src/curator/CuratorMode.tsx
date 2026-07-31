@@ -29,6 +29,7 @@ const GALLERY_TABS = [
   { id: 13, name: "G13: Future Wing" },
   { id: 14, name: "Ending & Finale" },
   { id: 0, name: "🏛 Museum Meta" },
+  { id: 15, name: "🖼 Global Assets" },
 ];
 
 function ImageUploader({ initialImage, onImageChange, label }: { initialImage: string | null; onImageChange: (img: string | null) => void; label: string }) {
@@ -1385,6 +1386,85 @@ function Gallery13Editor() {
   );
 }
 
+function GlobalAssetsEditor() {
+  const { data, setData } = useCurator();
+  const assets = data.assets || { birdLogo: null, hallwayBackground: null, entranceCardImage: null, guestbookHeaderImage: null };
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader title="Global Assets — Non-Gallery Images" />
+      <p className="text-sm text-muted-foreground -mt-4">
+        These images appear across the entire museum (entrance, welcome page, guide bird, guestbook).
+        Upload or replace any of them. They are stored inside the museum data and persist across saves.
+      </p>
+
+      {/* Bird Logo */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">🐦 Guide Bird / Logo</h4>
+        <p className="text-xs text-gray-500">Appears on the entrance page, welcome landing, guide bird popup, and "Ready?" screen. Default: the small robin.</p>
+        <ImageUploader
+          initialImage={assets.birdLogo}
+          onImageChange={(img) => {
+            setData((prev) => ({
+              ...prev,
+              assets: { ...prev.assets, birdLogo: img }
+            }));
+          }}
+          label="Guide Bird Logo"
+        />
+      </div>
+
+      {/* Hallway Background */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">🏛 Hallway Background</h4>
+        <p className="text-xs text-gray-500">The full-screen background image shown during the entrance hallway sequence. Full-bleed, recommended 1920x1080 or similar.</p>
+        <ImageUploader
+          initialImage={assets.hallwayBackground}
+          onImageChange={(img) => {
+            setData((prev) => ({
+              ...prev,
+              assets: { ...prev.assets, hallwayBackground: img }
+            }));
+          }}
+          label="Hallway Background"
+        />
+      </div>
+
+      {/* Entrance Card Image */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">🎴 Entrance Card Image</h4>
+        <p className="text-xs text-gray-500">An optional image displayed in the entrance hallway (the covered exhibit card). Any image works — a photo, artwork, or memento.</p>
+        <ImageUploader
+          initialImage={assets.entranceCardImage}
+          onImageChange={(img) => {
+            setData((prev) => ({
+              ...prev,
+              assets: { ...prev.assets, entranceCardImage: img }
+            }));
+          }}
+          label="Entrance Card Image"
+        />
+      </div>
+
+      {/* Guestbook Header */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">📖 Guestbook Header Image</h4>
+        <p className="text-xs text-gray-500">Optional image at the top of the guestbook section at the end of the museum.</p>
+        <ImageUploader
+          initialImage={assets.guestbookHeaderImage}
+          onImageChange={(img) => {
+            setData((prev) => ({
+              ...prev,
+              assets: { ...prev.assets, guestbookHeaderImage: img }
+            }));
+          }}
+          label="Guestbook Header Image"
+        />
+      </div>
+    </div>
+  );
+}
+
 function MuseumMetaEditor() {
   const { data, setData } = useCurator();
   const meta = data.museum;
@@ -1704,6 +1784,7 @@ export default function CuratorMode() {
             {activeGallery === 13 && <Gallery12Editor />}
             {activeGallery === 14 && <Gallery13Editor />}
             {activeGallery === 0 && <MuseumMetaEditor />}
+            {activeGallery === 15 && <GlobalAssetsEditor />}
           </motion.div>
         </AnimatePresence>
       </main>
