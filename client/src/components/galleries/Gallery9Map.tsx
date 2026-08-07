@@ -30,7 +30,7 @@ export default function Gallery9Map() {
   return (
     <RoomSection id="gallery-9" plaque="gallery nine" title="The Map of Memories" subtitle="Every story has a setting. Ours had many.">
       <div className="museum-frame relative mx-auto max-w-4xl overflow-hidden">
-        <img src={MAP_BG} alt="Vintage world map with memory pins" className="block w-full" />
+        <img src={museumData.memoryMap.image} alt="Vintage world map with memory pins" className="block w-full" />
         {mapPins.map((pin) => (
           <button
             key={pin.id}
