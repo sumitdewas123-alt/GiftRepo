@@ -142,7 +142,8 @@ export let birdLogoImage: string | null = d.assets?.birdLogo ?? null;
 export let hallwayBackgroundImage: string | null = d.assets?.hallwayBackground ?? null;
 export let entranceCardImage: string | null = d.assets?.entranceCardImage ?? null;
 export let guestbookHeaderImage: string | null = d.assets?.guestbookHeaderImage ?? null;
-
+export let memoryMapImage: string =
+  d.gallery9?.memoryMap?.image ?? "";
 /* ---------- Refresh mechanism ---------- */
 function refreshBindings() {
   d = getMuseumData();
@@ -175,6 +176,8 @@ function refreshBindings() {
   polaroids = d.gallery8?.polaroids ?? [];
   compliments = d.gallery8?.compliments ?? [];
   mapPins = d.gallery9?.mapPins ?? [];
+  memoryMapImage =
+  d.gallery9?.memoryMap?.image ?? "";
   stars = d.gallery10?.stars ?? [];
   brightestStarText = d.gallery10?.brightestStarText ?? "";
   letters = d.gallery11?.letters ?? [];
