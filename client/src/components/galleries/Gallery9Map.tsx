@@ -6,7 +6,7 @@ import RoomSection from "@/components/RoomSection";
 import { mapPins, type MapPin } from "@/lib/museumData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-
+import museumData from "../lib/museum.json";
 const MAP_BG = "/manus-storage/world-map_77a0cc6a.png";
 
 export default function Gallery9Map() {
