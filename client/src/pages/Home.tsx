@@ -36,7 +36,7 @@ import Gallery11Constellation from "@/components/galleries/Gallery11Constellatio
 import Gallery12Hidden from "@/components/galleries/Gallery12Hidden";
 import Gallery13Future from "@/components/galleries/Gallery13Future";
 import FinalRoom from "@/components/galleries/FinalRoom";
-import { birdLogoImage } from "@/lib/museumData";
+import { birdLogoImage, openingPageImage } from "@/lib/museumData";
 
 export default function Home() {
   const { entered, setEntered, markVisited } = useMuseum();
@@ -97,7 +97,7 @@ export default function Home() {
       <main id="main" key={dataVersion}>
         {/* ========== WELCOME LANDING STRIP ========== */}
         <section className="paper-texture relative flex min-h-[60vh] flex-col items-center justify-center bg-background px-6 py-24 text-center" aria-label="Museum welcome">
-          <img src={birdLogoImage || "/manus-storage/logo-bird_bdea2d3a.png"} alt="" className="h-16 w-16" style={{ animation: "floatSlow 5s ease-in-out infinite" }} />
+          <img src={openingPageImage || birdLogoImage || "/manus-storage/logo-bird_bdea2d3a.png"} alt="" className="h-16 w-16" style={{ animation: "floatSlow 5s ease-in-out infinite" }} />
           <p className="plaque mt-6">now entering the permanent collection</p>
           <h1 className="room-title pinspot mt-6 text-4xl md:text-6xl">The Museum of Chicko</h1>
           <p className="mt-4 max-w-xl font-body text-lg italic text-muted-foreground">

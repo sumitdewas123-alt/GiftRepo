@@ -141,6 +141,7 @@ export let dearChickoLetter: string[] = d.museum?.dearChickoLetter ?? [];
 export let birdLogoImage: string | null = d.assets?.birdLogo ?? null;
 export let hallwayBackgroundImage: string | null = d.assets?.hallwayBackground ?? null;
 export let entranceCardImage: string | null = d.assets?.entranceCardImage ?? null;
+export let openingPageImage: string | null = d.assets?.openingPageImage ?? null;
 export let guestbookHeaderImage: string | null = d.assets?.guestbookHeaderImage ?? null;
 export let memoryMapImage: string =
   d.gallery9?.memoryMap?.image ?? "";
@@ -195,6 +196,7 @@ function refreshBindings() {
   birdLogoImage = d.assets?.birdLogo ?? null;
   hallwayBackgroundImage = d.assets?.hallwayBackground ?? null;
   entranceCardImage = d.assets?.entranceCardImage ?? null;
+  openingPageImage = d.assets?.openingPageImage ?? null;
   guestbookHeaderImage = d.assets?.guestbookHeaderImage ?? null;
 }
 

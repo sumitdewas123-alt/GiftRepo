@@ -1388,7 +1388,7 @@ function Gallery13Editor() {
 
 function GlobalAssetsEditor() {
   const { data, setData } = useCurator();
-  const assets = data.assets || { birdLogo: null, hallwayBackground: null, entranceCardImage: null, guestbookHeaderImage: null };
+  const assets = data.assets || { birdLogo: null, hallwayBackground: null, entranceCardImage: null, openingPageImage: null, guestbookHeaderImage: null };
 
   return (
     <div className="space-y-6">
@@ -1443,6 +1443,17 @@ function GlobalAssetsEditor() {
             }));
           }}
           label="Entrance Card Image"
+        />
+      </div>
+
+      {/* Opening Page Image */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">Opening Page Image</h4>
+        <p className="text-xs text-gray-500">The image shown above the welcome-page title. Upload, replace, preview, or remove it here.</p>
+        <ImageUploader
+          initialImage={assets.openingPageImage}
+          onImageChange={(img) => setData((prev) => ({ ...prev, assets: { ...prev.assets, openingPageImage: img } }))}
+          label="Opening Page Image"
         />
       </div>
 
@@ -1525,6 +1536,25 @@ function MuseumMetaEditor() {
         <EditableField label="Placeholder" value={data.guestbook.placeholder} onChange={(v) => {
           setData((prev) => ({ ...prev, guestbook: { ...prev.guestbook, placeholder: v } }));
         }} />
+      </div>
+
+      {/* Guestbook Signatures */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold text-gray-700">Guestbook Signatures ({data.guestbook.signatures.length})</h4>
+          <button onClick={() => {
+            if (window.confirm("Delete all guestbook signatures? This can be recovered with Undo.")) {
+              setData((prev) => ({ ...prev, guestbook: { ...prev.guestbook, signatures: [] } }));
+            }
+          }} className="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded">Clear All</button>
+        </div>
+        {data.guestbook.signatures.map((sig, i) => (
+          <div key={i} className="flex items-start justify-between gap-2 p-3 bg-gray-50 rounded border border-gray-100">
+            <div><p className="text-xs text-gray-500">{sig.date || 'no date'}</p><p className="text-sm text-gray-800">{sig.name || 'Anonymous'}</p><p className="text-xs text-gray-600">{sig.message}</p></div>
+            <button onClick={() => setData((prev) => ({ ...prev, guestbook: { ...prev.guestbook, signatures: prev.guestbook.signatures.filter((_, idx) => idx !== i) } }))} className="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded">Delete</button>
+          </div>
+        ))}
+        {data.guestbook.signatures.length === 0 && <p className="text-xs text-gray-400 italic">No signatures yet.</p>}
       </div>
 
       {/* Metadata */}

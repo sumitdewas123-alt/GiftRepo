@@ -2,13 +2,18 @@
 import { useState } from "react";
 import RoomSection from "@/components/RoomSection";
 import { toast } from "sonner";
-
+import { getMuseumData } from "@/lib/museumDataLoader";
 interface Entry { name: string; note: string; date: string; }
 
 function loadEntries(): Entry[] {
   try {
     const raw = localStorage.getItem("moc-guestbook");
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    const signatures = getMuseumData()?.guestbook?.signatures;
+    if (Array.isArray(signatures)) return signatures.map((s) => ({ name: s.name || "A Cherished Visitor", note: s.message || "", date: s.date || "" }));
   } catch { /* ignore */ }
   return [];
 }

@@ -215,7 +215,7 @@ export interface MuseumData {
     polaroids: Polaroid[];
     compliments: string[];
   };
-  gallery9: { mapPins: MapPin[] };
+  gallery9: { mapPins: MapPin[]; memoryMap?: { image?: string } };
   gallery10: { stars: Star[]; brightestStarText: string };
   gallery11: { letters: Letter[]; hiddenLetterText: string; password: string };
   gallery12: { futureLabels: FutureLabel[]; futureFrameLabel: string };
@@ -243,6 +243,7 @@ export interface MuseumData {
     birdLogo: string | null;
     hallwayBackground: string | null;
     entranceCardImage: string | null;
+    openingPageImage: string | null;
     guestbookHeaderImage: string | null;
   };
 }
