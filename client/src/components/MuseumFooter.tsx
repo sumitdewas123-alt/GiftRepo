@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useMuseum } from "@/contexts/MuseumContext";
 import { soundEngine } from "@/lib/soundEngine";
 import { toast } from "sonner";
+import { footerImage, birdLogoImage } from "@/lib/museumData";
 
 export default function MuseumFooter() {
   const { altTrack, toggleTrack } = useMuseum();
@@ -32,7 +33,7 @@ export default function MuseumFooter() {
       <div className="container">
         <div className="grid gap-10 text-center md:grid-cols-3 md:text-left">
           <div>
-            <img src="/manus-storage/logo-bird_bdea2d3a.png" alt="Museum of Chicko emblem" className="mx-auto mb-3 h-12 w-12 md:mx-0" />
+            <img src={footerImage || birdLogoImage || "/manus-storage/logo-bird_bdea2d3a.png"} alt="Museum of Chicko emblem" className="mx-auto mb-3 h-20 w-20 object-contain md:mx-0" onError={(e) => { e.currentTarget.src = "/manus-storage/logo-bird_bdea2d3a.png"; }} />
             <p className="font-display text-lg tracking-[0.2em] text-[#efe2c2]">THE MUSEUM OF CHICKO</p>
             <p className="mt-1 font-body text-sm italic">Since 2015 · Admission: one smile</p>
             <button

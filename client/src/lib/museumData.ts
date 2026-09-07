@@ -143,6 +143,7 @@ export let hallwayBackgroundImage: string | null = d.assets?.hallwayBackground ?
 export let entranceCardImage: string | null = d.assets?.entranceCardImage ?? null;
 export let openingPageImage: string | null = d.assets?.openingPageImage ?? null;
 export let guestbookHeaderImage: string | null = d.assets?.guestbookHeaderImage ?? null;
+export let footerImage: string | null = d.assets?.footerImage ?? null;
 export let memoryMapImage: string =
   d.gallery9?.memoryMap?.image ?? "";
 /* ---------- Refresh mechanism ---------- */
@@ -198,6 +199,7 @@ function refreshBindings() {
   entranceCardImage = d.assets?.entranceCardImage ?? null;
   openingPageImage = d.assets?.openingPageImage ?? null;
   guestbookHeaderImage = d.assets?.guestbookHeaderImage ?? null;
+  footerImage = d.assets?.footerImage ?? null;
 }
 
 if (typeof window !== "undefined") {

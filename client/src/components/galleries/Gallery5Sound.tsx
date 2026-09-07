@@ -96,7 +96,17 @@ export default function Gallery6Sound() {
                 </button>
               </div>
               <p className="mt-3 font-body text-sm italic leading-relaxed text-[#d8c9a5]">{s.why}</p>
-              {s.spotifyLink && (
+              {s.audioFile && playing && (
+                <audio
+                  src={s.audioFile}
+                  autoPlay
+                  controls={false}
+                  className="pointer-events-none absolute h-0 w-0 opacity-0"
+                  ref={(el) => { if (el && playing) { el.volume = 0.5; el.play().catch(() => {}); } }}
+                  onEnded={() => setNowPlaying(null)}
+                />
+              )}
+              {!s.audioFile && s.spotifyLink && (
                 <a
                   href={s.spotifyLink}
                   target="_blank"

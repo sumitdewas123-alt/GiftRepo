@@ -115,6 +115,7 @@ export interface Song {
   why: string;
   keywords: string[];
   spotifyLink: string | null;
+  audioFile: string | null;
 }
 export interface Cabinet {
   id: string;
@@ -245,6 +246,7 @@ export interface MuseumData {
     entranceCardImage: string | null;
     openingPageImage: string | null;
     guestbookHeaderImage: string | null;
+    footerImage: string | null;
   };
 }
 

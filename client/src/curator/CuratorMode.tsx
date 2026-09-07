@@ -862,7 +862,7 @@ function Gallery5Editor() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Gallery 5: The Sound Room — Cassettes, Songs, Spotify Links" />
+      <SectionHeader title="Gallery 5: The Sound Room — Cassettes, Songs, and Audio" />
       
       {/* Cassettes */}
       <div className="space-y-3">
@@ -918,6 +918,10 @@ function Gallery5Editor() {
               const items = [...g5.songs]; items[idx] = { ...items[idx], why: v };
               setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
             }} multiline />
+            <AudioUploader initialAudio={song.audioFile || null} onAudioChange={(audio) => {
+              const items = [...g5.songs]; items[idx] = { ...items[idx], audioFile: audio };
+              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
+            }} label="Song Audio File (used instead of Spotify when uploaded)" />
             <KeywordsEditor keywords={song.keywords} onChange={(kws) => {
               const items = [...g5.songs]; items[idx] = { ...items[idx], keywords: kws };
               setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
@@ -1388,7 +1392,7 @@ function Gallery13Editor() {
 
 function GlobalAssetsEditor() {
   const { data, setData } = useCurator();
-  const assets = data.assets || { birdLogo: null, hallwayBackground: null, entranceCardImage: null, openingPageImage: null, guestbookHeaderImage: null };
+  const assets = data.assets || { birdLogo: null, hallwayBackground: null, entranceCardImage: null, openingPageImage: null, guestbookHeaderImage: null, footerImage: null };
 
   return (
     <div className="space-y-6">
@@ -1454,6 +1458,17 @@ function GlobalAssetsEditor() {
           initialImage={assets.openingPageImage}
           onImageChange={(img) => setData((prev) => ({ ...prev, assets: { ...prev.assets, openingPageImage: img } }))}
           label="Opening Page Image"
+        />
+      </div>
+
+      {/* Footer Image */}
+      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">Footer / Exit Image</h4>
+        <p className="text-xs text-gray-500">This image appears in the museum footer. Uploading one replaces the broken or missing footer image; removing it restores the bird-logo fallback.</p>
+        <ImageUploader
+          initialImage={assets.footerImage}
+          onImageChange={(img) => setData((prev) => ({ ...prev, assets: { ...prev.assets, footerImage: img } }))}
+          label="Footer Image"
         />
       </div>
 
