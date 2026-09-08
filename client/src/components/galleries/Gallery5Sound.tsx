@@ -16,6 +16,17 @@ export default function Gallery6Sound() {
   const { songsHeard, markSongHeard, award, soundOn, toggleSound } = useMuseum();
   const [nowPlaying, setNowPlaying] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopEveryAudio = () => {
+    // Be defensive: stop all audio nodes in the document, not only the
+    // current React ref. This also handles stale elements from a previous
+    // render and any other audio source mounted by the museum shell.
+    document.querySelectorAll<HTMLAudioElement>("audio").forEach((audio) => {
+      audio.pause();
+      audio.currentTime = 0;
+    });
+  };
+
   const allIds = [...cassettes.map((c) => c.id), ...songs.map((s) => s.id)];
   const activeAudioSource = nowPlaying
     ? cassettes.find((c) => c.id === nowPlaying)?.audioFile
@@ -29,6 +40,7 @@ export default function Gallery6Sound() {
     const audio = audioRef.current;
     if (!audio) return;
 
+    stopEveryAudio();
     audio.pause();
     audio.currentTime = 0;
     audio.removeAttribute("src");
@@ -44,12 +56,16 @@ export default function Gallery6Sound() {
     });
 
     return () => {
+      stopEveryAudio();
       audio.pause();
       audio.currentTime = 0;
     };
   }, [activeAudioSource]);
 
   const listen = (id: string) => {
+    // Stop the currently playing track synchronously on the click event,
+    // before React schedules the next render.
+    stopEveryAudio();
     if (id === nowPlaying) {
       setNowPlaying(null);
       return;
