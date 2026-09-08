@@ -1,6 +1,6 @@
 /* Spec — Gallery 6: The Sound Room. Cassette wall (Laugh/Advice/Random/Late Night/Books),
  * songs, Silence Booth, Your Laugh oscilloscope, Archivist feather when all heard. */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RoomSection from "@/components/RoomSection";
 import { cassettes, songs, silenceBoothLabel, laughExhibitLabel } from "@/lib/museumData";
 import { useMuseum } from "@/contexts/MuseumContext";
@@ -15,17 +15,41 @@ const BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
 export default function Gallery6Sound() {
   const { songsHeard, markSongHeard, award, soundOn, toggleSound } = useMuseum();
   const [nowPlaying, setNowPlaying] = useState<string | null>(null);
-  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const allIds = [...cassettes.map((c) => c.id), ...songs.map((s) => s.id)];
+  const activeAudioSource = nowPlaying
+    ? cassettes.find((c) => c.id === nowPlaying)?.audioFile
+      || songs.find((s) => s.id === nowPlaying)?.audioFile
+      || null
+    : null;
+
+  // There is deliberately one audio element for the entire room. Changing
+  // its source pauses and replaces the previous track at the browser level.
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.removeAttribute("src");
+    audio.load();
+
+    if (!activeAudioSource) return;
+
+    audio.src = activeAudioSource;
+    audio.volume = 0.5;
+    void audio.play().catch(() => {
+      // Browser autoplay policies may defer playback; the click already
+      // occurred and the browser will permit the next play attempt.
+    });
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [activeAudioSource]);
 
   const listen = (id: string) => {
-    // Only one uploaded track may be active at a time. Pause and reset the
-    // previous element before React swaps the rendered audio element.
-    if (activeAudioRef.current) {
-      activeAudioRef.current.pause();
-      activeAudioRef.current.currentTime = 0;
-      activeAudioRef.current = null;
-    }
     if (id === nowPlaying) {
       setNowPlaying(null);
       return;
@@ -66,23 +90,7 @@ export default function Gallery6Sound() {
                   <p className="mt-2 font-hand text-xl text-[#e8cd8c]">"{c.label}" {heard && "✓"}</p>
                   <p className="mt-1 font-body text-xs italic leading-snug text-[#d8c9a5]">{c.why}</p>
                 </button>
-                {/* Play uploaded audio if present */}
-                {(c as any).audioFile && playing && (
-                  <audio
-                    src={(c as any).audioFile}
-                    autoPlay
-                    controls={false}
-                    className="absolute opacity-0 pointer-events-none"
-                    ref={(el) => {
-                      if (el && playing) {
-                        activeAudioRef.current = el;
-                        el.volume = 0.5;
-                        el.play().catch(() => {});
-                      }
-                    }}
-                    onEnded={() => setNowPlaying(null)}
-                  />
-                )}
+
               </div>
             );
           })}
@@ -111,22 +119,7 @@ export default function Gallery6Sound() {
                 </button>
               </div>
               <p className="mt-3 font-body text-sm italic leading-relaxed text-[#d8c9a5]">{s.why}</p>
-              {s.audioFile && playing && (
-                <audio
-                  src={s.audioFile}
-                  autoPlay
-                  controls={false}
-                  className="pointer-events-none absolute h-0 w-0 opacity-0"
-                  ref={(el) => {
-                    if (el && playing) {
-                      activeAudioRef.current = el;
-                      el.volume = 0.5;
-                      el.play().catch(() => {});
-                    }
-                  }}
-                  onEnded={() => setNowPlaying(null)}
-                />
-              )}
+
               {!s.audioFile && s.spotifyLink && (
                 <a
                   href={s.spotifyLink}
@@ -167,6 +160,13 @@ export default function Gallery6Sound() {
           <p className="mt-3 font-body italic leading-relaxed text-[#d8c9a5]">"{laughExhibitLabel}"</p>
         </div>
       </div>
+      <audio
+        ref={audioRef}
+        controls={false}
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        onEnded={() => setNowPlaying(null)}
+        aria-hidden="true"
+      />
       <p className="mt-8 text-center font-display text-xs tracking-[0.25em] text-[#c9a45c]/70">
         LISTEN TO EVERYTHING — THE ARCHIVIST IS WAITING WITH A FEATHER
       </p>
