@@ -1,6 +1,6 @@
 /* Spec — Gallery 6: The Sound Room. Cassette wall (Laugh/Advice/Random/Late Night/Books),
  * songs, Silence Booth, Your Laugh oscilloscope, Archivist feather when all heard. */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import RoomSection from "@/components/RoomSection";
 import { cassettes, songs, silenceBoothLabel, laughExhibitLabel } from "@/lib/museumData";
 import { useMuseum } from "@/contexts/MuseumContext";
@@ -15,9 +15,21 @@ const BIRD = "/manus-storage/logo-bird_bdea2d3a.png";
 export default function Gallery6Sound() {
   const { songsHeard, markSongHeard, award, soundOn, toggleSound } = useMuseum();
   const [nowPlaying, setNowPlaying] = useState<string | null>(null);
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const allIds = [...cassettes.map((c) => c.id), ...songs.map((s) => s.id)];
 
   const listen = (id: string) => {
+    // Only one uploaded track may be active at a time. Pause and reset the
+    // previous element before React swaps the rendered audio element.
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current.currentTime = 0;
+      activeAudioRef.current = null;
+    }
+    if (id === nowPlaying) {
+      setNowPlaying(null);
+      return;
+    }
     if (!soundOn) { soundEngine.start(); toggleSound(); }
     soundEngine.chime();
     setNowPlaying(id);
@@ -62,8 +74,11 @@ export default function Gallery6Sound() {
                     controls={false}
                     className="absolute opacity-0 pointer-events-none"
                     ref={(el) => {
-                      if (el && playing) { el.volume = 0.5; el.play().catch(() => {}); }
-                      if (el && !playing) { el.pause(); }
+                      if (el && playing) {
+                        activeAudioRef.current = el;
+                        el.volume = 0.5;
+                        el.play().catch(() => {});
+                      }
                     }}
                     onEnded={() => setNowPlaying(null)}
                   />
@@ -102,7 +117,13 @@ export default function Gallery6Sound() {
                   autoPlay
                   controls={false}
                   className="pointer-events-none absolute h-0 w-0 opacity-0"
-                  ref={(el) => { if (el && playing) { el.volume = 0.5; el.play().catch(() => {}); } }}
+                  ref={(el) => {
+                    if (el && playing) {
+                      activeAudioRef.current = el;
+                      el.volume = 0.5;
+                      el.play().catch(() => {});
+                    }
+                  }}
                   onEnded={() => setNowPlaying(null)}
                 />
               )}
