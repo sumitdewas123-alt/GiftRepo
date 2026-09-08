@@ -250,23 +250,45 @@ export interface MuseumData {
   };
 }
 
-// Load cached data or fall back to default JSON
-function loadFromStorage(): MuseumData | null {
+// Curator data can contain large embedded image/audio data URLs. Storing the
+// entire 5MB+ museum object in localStorage exceeds common browser quotas, so
+// persist only the recursive patch relative to the bundled JSON defaults.
+function createPatch(base: any, current: any): any {
+  if (Object.is(base, current)) return undefined;
+  if (Array.isArray(base) || Array.isArray(current)) return current;
+  if (base && current && typeof base === "object" && typeof current === "object") {
+    const patch: Record<string, any> = {};
+    const keys = Array.from(new Set([...Object.keys(base), ...Object.keys(current)]));
+    for (const key of keys) {
+      const child = createPatch(base[key], current[key]);
+      if (child !== undefined) patch[key] = child;
+    }
+    return Object.keys(patch).length > 0 ? patch : undefined;
+  }
+  return current;
+}
+
+// Load a saved patch and merge it onto the current bundled museum JSON.
+function loadFromStorage(): Partial<MuseumData> | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as MuseumData;
+    if (raw) return JSON.parse(raw) as Partial<MuseumData>;
   } catch {
     /* ignore parse errors */
   }
   return null;
 }
 
-// Save data to localStorage (Curator Mode only)
-function saveToStorage(data: MuseumData): void {
+// Save only changed fields to localStorage. This keeps persistence working even
+// when the bundled museum contains large base64 assets.
+function saveToStorage(data: MuseumData): boolean {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const patch = createPatch(defaultMuseumData, data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(patch ?? {}));
+    return true;
   } catch {
     console.warn("Failed to save museum data to localStorage");
+    return false;
   }
 }
 
@@ -300,12 +322,13 @@ function validateMuseumData(data: any): boolean {
 
 // Get the current active museum data (cached > default)
 export function getMuseumData(): MuseumData {
-  const cached = loadFromStorage();
-  // Only use cached data if it passes schema validation (prevents crashes
-  // when the museum.json structure changes between deployments).
-  if (cached && validateMuseumData(cached)) return cached;
-  // Invalidate stale cached data so the next load uses fresh defaults.
-  if (cached) localStorage.removeItem(STORAGE_KEY);
+  const cachedPatch = loadFromStorage();
+  const merged = cachedPatch
+    ? deepMerge(defaultMuseumData as MuseumData, cachedPatch)
+    : defaultMuseumData as MuseumData;
+  // Validate the merged result so a malformed or legacy cache never crashes the museum.
+  if (validateMuseumData(merged)) return merged;
+  if (cachedPatch) localStorage.removeItem(STORAGE_KEY);
   return defaultMuseumData as MuseumData;
 }
 
@@ -330,7 +353,7 @@ export function exportMuseumData(): string {
 export function importMuseumData(jsonString: string): MuseumData | null {
   try {
     const data = JSON.parse(jsonString) as MuseumData;
-    if (data && data.metadata && data.gallery1) {
+    if (data && data.metadata && data.gallery1 && validateMuseumData(data)) {
       saveToStorage(data);
       return data;
     }
