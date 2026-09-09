@@ -169,7 +169,12 @@ function AudioUploader({ initialAudio, onAudioChange, label }: { initialAudio: s
           type="file"
           accept="audio/*"
           className="hidden"
-          onChange={(e) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+            // Permit selecting the same file again after a failed/replaced upload.
+            e.currentTarget.value = "";
+          }}
         />
       </div>
       {!preview && !error && <p className="text-[10px] text-gray-400">Max {MAX_SIZE_MB}MB. Supports MP3, WAV, OGG.</p>}
@@ -860,6 +865,26 @@ function Gallery5Editor() {
   const { data, setData } = useCurator();
   const g5 = data.gallery5;
 
+  const updateCassette = (id: string, changes: Partial<Cassette>) => {
+    setData((prev) => ({
+      ...prev,
+      gallery5: {
+        ...prev.gallery5,
+        cassettes: prev.gallery5.cassettes.map((item) => item.id === id ? { ...item, ...changes } : item),
+      },
+    }));
+  };
+
+  const updateSong = (id: string, changes: Partial<Song>) => {
+    setData((prev) => ({
+      ...prev,
+      gallery5: {
+        ...prev.gallery5,
+        songs: prev.gallery5.songs.map((item) => item.id === id ? { ...item, ...changes } : item),
+      },
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <SectionHeader title="Gallery 5: The Sound Room — Cassettes, Songs, and Audio" />
@@ -867,30 +892,15 @@ function Gallery5Editor() {
       {/* Cassettes */}
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-gray-700">Cassettes</h4>
-        {g5.cassettes.map((cassette, idx) => (
+        {g5.cassettes.map((cassette) => (
           <div key={cassette.id} className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <EditableField label="Label" value={cassette.label} onChange={(v) => {
-                const items = [...g5.cassettes]; items[idx] = { ...items[idx], label: v };
-                setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, cassettes: items } }));
-              }} />
-              <EditableField label="ID" value={cassette.id} onChange={(v) => {
-                const items = [...g5.cassettes]; items[idx] = { ...items[idx], id: v };
-                setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, cassettes: items } }));
-              }} />
+              <EditableField label="Label" value={cassette.label} onChange={(v) => updateCassette(cassette.id, { label: v })} />
+              <EditableField label="ID" value={cassette.id} onChange={(v) => updateCassette(cassette.id, { id: v })} />
             </div>
-            <EditableField label="Why" value={cassette.why} onChange={(v) => {
-              const items = [...g5.cassettes]; items[idx] = { ...items[idx], why: v };
-              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, cassettes: items } }));
-            }} multiline />
-            <KeywordsEditor keywords={cassette.keywords} onChange={(kws) => {
-              const items = [...g5.cassettes]; items[idx] = { ...items[idx], keywords: kws };
-              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, cassettes: items } }));
-            }} />
-            <AudioUploader initialAudio={cassette.audioFile} onAudioChange={(audio) => {
-              const items = [...g5.cassettes]; items[idx] = { ...items[idx], audioFile: audio };
-              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, cassettes: items } }));
-            }} label="Cassette Audio File" />
+            <EditableField label="Why" value={cassette.why} onChange={(v) => updateCassette(cassette.id, { why: v })} multiline />
+            <KeywordsEditor keywords={cassette.keywords} onChange={(kws) => updateCassette(cassette.id, { keywords: kws })} />
+            <AudioUploader initialAudio={cassette.audioFile} onAudioChange={(audio) => updateCassette(cassette.id, { audioFile: audio })} label="Cassette Audio File" />
           </div>
         ))}
       </div>
@@ -898,34 +908,16 @@ function Gallery5Editor() {
       {/* Songs */}
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-gray-700">Songs</h4>
-        {g5.songs.map((song, idx) => (
+        {g5.songs.map((song) => (
           <div key={song.id} className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
-            <EditableField label="Title" value={song.title} onChange={(v) => {
-              const items = [...g5.songs]; items[idx] = { ...items[idx], title: v };
-              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
-            }} />
+            <EditableField label="Title" value={song.title} onChange={(v) => updateSong(song.id, { title: v })} />
             <div className="grid grid-cols-2 gap-3">
-              <EditableField label="Vibe" value={song.vibe} onChange={(v) => {
-                const items = [...g5.songs]; items[idx] = { ...items[idx], vibe: v };
-                setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
-              }} />
-              <EditableField label="Spotify Link" value={song.spotifyLink || ""} onChange={(v) => {
-                const items = [...g5.songs]; items[idx] = { ...items[idx], spotifyLink: v || null };
-                setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
-              }} placeholder="https://open.spotify.com/..." />
+              <EditableField label="Vibe" value={song.vibe} onChange={(v) => updateSong(song.id, { vibe: v })} />
+              <EditableField label="Spotify Link" value={song.spotifyLink || ""} onChange={(v) => updateSong(song.id, { spotifyLink: v || null })} placeholder="https://open.spotify.com/..." />
             </div>
-            <EditableField label="Why it reminds me of you" value={song.why} onChange={(v) => {
-              const items = [...g5.songs]; items[idx] = { ...items[idx], why: v };
-              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
-            }} multiline />
-            <AudioUploader initialAudio={song.audioFile || null} onAudioChange={(audio) => {
-              const items = [...g5.songs]; items[idx] = { ...items[idx], audioFile: audio };
-              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
-            }} label="Song Audio File (used instead of Spotify when uploaded)" />
-            <KeywordsEditor keywords={song.keywords} onChange={(kws) => {
-              const items = [...g5.songs]; items[idx] = { ...items[idx], keywords: kws };
-              setData((prev) => ({ ...prev, gallery5: { ...prev.gallery5, songs: items } }));
-            }} />
+            <EditableField label="Why it reminds me of you" value={song.why} onChange={(v) => updateSong(song.id, { why: v })} multiline />
+            <AudioUploader initialAudio={song.audioFile || null} onAudioChange={(audio) => updateSong(song.id, { audioFile: audio })} label="Song Audio File (used instead of Spotify when uploaded)" />
+            <KeywordsEditor keywords={song.keywords} onChange={(kws) => updateSong(song.id, { keywords: kws })} />
           </div>
         ))}
       </div>

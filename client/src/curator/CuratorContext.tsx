@@ -3,7 +3,7 @@
  * All gallery edits go through this context. Changes are saved to localStorage.
  */
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { getMuseumData, saveMuseumData, resetMuseumData, exportMuseumData, importMuseumData, defaultMuseumData, type MuseumData } from "@/lib/museumDataLoader";
+import { getMuseumData, saveMuseumData, resetMuseumData, importMuseumData, defaultMuseumData, type MuseumData } from "@/lib/museumDataLoader";
 
 /** Notify the public museum (compat layer + open tabs) that data changed. */
 function notifyDataChanged() {
@@ -143,7 +143,13 @@ export function CuratorProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const exportData = useCallback(() => {
-    const json = exportMuseumData();
+    // Export the current editor state directly. Storage writes for large audio
+    // files are asynchronous, but the backup must always include the latest field.
+    const snapshot: MuseumData = {
+      ...data,
+      metadata: { ...data.metadata, lastModified: new Date().toISOString() },
+    };
+    const json = JSON.stringify(snapshot, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -151,7 +157,7 @@ export function CuratorProvider({ children }: { children: React.ReactNode }) {
     a.download = `museum-backup-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, []);
+  }, [data]);
 
   const importDataFn = useCallback((json: string) => {
     const result = importMuseumData(json);

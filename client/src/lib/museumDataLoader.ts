@@ -7,6 +7,11 @@
 import defaultMuseumData from "./museum.json";
 
 const STORAGE_KEY = "moc-museum-data";
+const DB_NAME = "moc-curator-storage";
+const DB_STORE = "museum";
+const DB_KEY = "museum-patch";
+let activeMuseumData: MuseumData | null = null;
+let indexedDbWriteChain: Promise<void> = Promise.resolve();
 
 // Deep merge helper
 function deepMerge<T>(target: T, source: Partial<T>): T {
@@ -268,6 +273,69 @@ function createPatch(base: any, current: any): any {
   return current;
 }
 
+function openMuseumDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains(DB_STORE)) {
+        request.result.createObjectStore(DB_STORE);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function loadFromIndexedDb(): Promise<Partial<MuseumData> | null> {
+  if (typeof indexedDB === "undefined") return null;
+  try {
+    const db = await openMuseumDb();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(DB_STORE, "readonly");
+      const request = tx.objectStore(DB_STORE).get(DB_KEY);
+      request.onsuccess = () => resolve((request.result as Partial<MuseumData>) || null);
+      request.onerror = () => reject(request.error);
+      tx.oncomplete = () => db.close();
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function saveToIndexedDb(patch: Partial<MuseumData>): Promise<void> {
+  if (typeof indexedDB === "undefined") return;
+  const db = await openMuseumDb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, "readwrite");
+    tx.objectStore(DB_STORE).put(patch, DB_KEY);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+function queueIndexedDbSave(patch: Partial<MuseumData>): void {
+  // Curator fields persist on every edit. Keep those writes ordered so a slower
+  // earlier transaction can never replace a newer Track 02 (or other) update.
+  indexedDbWriteChain = indexedDbWriteChain
+    .catch(() => undefined)
+    .then(() => saveToIndexedDb(patch));
+}
+
+async function clearIndexedDb(): Promise<void> {
+  if (typeof indexedDB === "undefined") return;
+  try {
+    const db = await openMuseumDb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).delete(DB_KEY);
+      tx.oncomplete = () => { db.close(); resolve(); };
+      tx.onerror = () => { db.close(); reject(tx.error); };
+    });
+  } catch {
+    /* ignore storage cleanup errors */
+  }
+}
+
 // Load a saved patch and merge it onto the current bundled museum JSON.
 function loadFromStorage(): Partial<MuseumData> | null {
   try {
@@ -282,13 +350,19 @@ function loadFromStorage(): Partial<MuseumData> | null {
 // Save only changed fields to localStorage. This keeps persistence working even
 // when the bundled museum contains large base64 assets.
 function saveToStorage(data: MuseumData): boolean {
+  const patch = (createPatch(defaultMuseumData, data) ?? {}) as Partial<MuseumData>;
+  // Update the live source synchronously. Preview and export must never depend
+  // on whether a browser storage write succeeds.
+  activeMuseumData = data;
+  queueIndexedDbSave(patch);
   try {
-    const patch = createPatch(defaultMuseumData, data);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(patch ?? {}));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(patch));
     return true;
   } catch {
-    console.warn("Failed to save museum data to localStorage");
-    return false;
+    // Multiple base64 audio files can exceed localStorage's small quota.
+    // IndexedDB remains the durable store; remove a stale partial cache.
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    return true;
   }
 }
 
@@ -320,16 +394,36 @@ function validateMuseumData(data: any): boolean {
   }
 }
 
-// Get the current active museum data (cached > default)
+// Hydrate the durable large-data cache before React and the compatibility
+// bindings import the museum. IndexedDB supports the uploaded audio payloads.
+export async function hydrateMuseumData(): Promise<void> {
+  const indexedPatch = await loadFromIndexedDb();
+  const localPatch = loadFromStorage();
+  const patch = indexedPatch ?? localPatch;
+  const merged = patch
+    ? deepMerge(defaultMuseumData as MuseumData, patch)
+    : defaultMuseumData as MuseumData;
+  activeMuseumData = validateMuseumData(merged) ? merged : defaultMuseumData as MuseumData;
+  // Migrate an existing localStorage-only patch to IndexedDB.
+  if (!indexedPatch && localPatch && validateMuseumData(activeMuseumData)) {
+    queueIndexedDbSave(localPatch);
+  }
+}
+
+// Get the current active museum data (live memory > cached patch > default).
 export function getMuseumData(): MuseumData {
+  if (activeMuseumData && validateMuseumData(activeMuseumData)) return activeMuseumData;
   const cachedPatch = loadFromStorage();
   const merged = cachedPatch
     ? deepMerge(defaultMuseumData as MuseumData, cachedPatch)
     : defaultMuseumData as MuseumData;
-  // Validate the merged result so a malformed or legacy cache never crashes the museum.
-  if (validateMuseumData(merged)) return merged;
+  if (validateMuseumData(merged)) {
+    activeMuseumData = merged;
+    return merged;
+  }
   if (cachedPatch) localStorage.removeItem(STORAGE_KEY);
-  return defaultMuseumData as MuseumData;
+  activeMuseumData = defaultMuseumData as MuseumData;
+  return activeMuseumData;
 }
 
 // Save curated data (used by Curator Mode)
@@ -339,14 +433,18 @@ export function saveMuseumData(data: MuseumData): void {
 
 // Reset to default JSON data
 export function resetMuseumData(): void {
+  activeMuseumData = defaultMuseumData as MuseumData;
   localStorage.removeItem(STORAGE_KEY);
+  void clearIndexedDb();
 }
 
 // Export museum data as JSON string for backup
 export function exportMuseumData(): string {
   const data = getMuseumData();
-  data.metadata.lastModified = new Date().toISOString();
-  return JSON.stringify(data, null, 2);
+  return JSON.stringify({
+    ...data,
+    metadata: { ...data.metadata, lastModified: new Date().toISOString() },
+  }, null, 2);
 }
 
 // Import museum data from JSON string
