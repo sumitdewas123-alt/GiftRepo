@@ -24,6 +24,7 @@ import {
   type Book,
   type Performance,
   type SpecialExhibit,
+  type HiddenDetail,
   type StudioCaseItem,
   type Cassette,
   type Song,
@@ -46,6 +47,7 @@ export type {
   Book,
   Performance,
   SpecialExhibit,
+  HiddenDetail,
   StudioCaseItem,
   Cassette,
   Song,
@@ -141,8 +143,11 @@ export let dearChickoLetter: string[] = d.museum?.dearChickoLetter ?? [];
 export let birdLogoImage: string | null = d.assets?.birdLogo ?? null;
 export let hallwayBackgroundImage: string | null = d.assets?.hallwayBackground ?? null;
 export let entranceCardImage: string | null = d.assets?.entranceCardImage ?? null;
+export let openingPageImage: string | null = d.assets?.openingPageImage ?? null;
 export let guestbookHeaderImage: string | null = d.assets?.guestbookHeaderImage ?? null;
-
+export let footerImage: string | null = d.assets?.footerImage ?? null;
+export let memoryMapImage: string =
+  d.gallery9?.memoryMap?.image ?? "";
 /* ---------- Refresh mechanism ---------- */
 function refreshBindings() {
   d = getMuseumData();
@@ -175,6 +180,8 @@ function refreshBindings() {
   polaroids = d.gallery8?.polaroids ?? [];
   compliments = d.gallery8?.compliments ?? [];
   mapPins = d.gallery9?.mapPins ?? [];
+  memoryMapImage =
+  d.gallery9?.memoryMap?.image ?? "";
   stars = d.gallery10?.stars ?? [];
   brightestStarText = d.gallery10?.brightestStarText ?? "";
   letters = d.gallery11?.letters ?? [];
@@ -192,7 +199,9 @@ function refreshBindings() {
   birdLogoImage = d.assets?.birdLogo ?? null;
   hallwayBackgroundImage = d.assets?.hallwayBackground ?? null;
   entranceCardImage = d.assets?.entranceCardImage ?? null;
+  openingPageImage = d.assets?.openingPageImage ?? null;
   guestbookHeaderImage = d.assets?.guestbookHeaderImage ?? null;
+  footerImage = d.assets?.footerImage ?? null;
 }
 
 if (typeof window !== "undefined") {
