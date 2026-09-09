@@ -4,7 +4,7 @@
  * hidden rehearsal-diary details. Keeps the museum's warm archival aesthetic. */
 import { useMemo, useState } from "react";
 import RoomSection from "@/components/RoomSection";
-import { danceStudio, performances, specialExhibits, studioCase, studioHiddenNote, hiddenCompartmentNote, type Performance } from "@/lib/museumData";
+import { danceStudio, performances, specialExhibits, studioCase, type Performance, type SpecialExhibit, type HiddenDetail } from "@/lib/museumData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useMuseum } from "@/contexts/MuseumContext";
@@ -67,22 +67,49 @@ function PerformanceFrame({ p, index, onOpen }: { p: Performance; index: number;
 
 export default function Gallery5DanceStudio() {
   const [selected, setSelected] = useState<Performance | null>(null);
+  const [selectedExhibit, setSelectedExhibit] = useState<SpecialExhibit | null>(null);
+  const [selectedDiary, setSelectedDiary] = useState<HiddenDetail | null>(null);
   const [opens, setOpens] = useState(0);
-  const [diaryOpen, setDiaryOpen] = useState(false);
   const { booksGlow } = useMuseum();
   const g = danceStudio;
 
+  // New museum data stores hidden details as individual items. These fallbacks
+  // keep older imported backups fully compatible until they are edited again.
+  const hiddenDetails: HiddenDetail[] = g.hiddenDetails ?? [
+    { id: "legacy-diary", kind: "diary", emoji: "📓", label: "a rehearsal diary, left open…", note: g.hiddenNote || "" },
+    { id: "legacy-compartment", kind: "compartment", emoji: "🩰", label: "something behind the fourth frame…", note: g.hiddenCompartmentNote || "" },
+    { id: "legacy-schedule", kind: "schedule", emoji: "🗓️", label: "a folded schedule…", note: g.scheduleNote || "" },
+    { id: "legacy-hairpin", kind: "hairpin", emoji: "📎", label: "something small on the floor…", note: g.hairpinNote || "" },
+  ];
+  const hiddenDetailsEnabled = g.hiddenDetailsEnabled !== false;
+  const studioCaseEnabled = g.studioCaseEnabled !== false;
+  const compartmentDetail = hiddenDetails.find((detail) => detail.kind === "compartment");
+
   const openFrame = (p: Performance) => {
+    setSelectedExhibit(null);
     setSelected(p);
     const n = opens + 1;
     setOpens(n);
-    if (n === 4) {
-      toast("🩰 Something slips from behind the fourth frame…", { description: `"${hiddenCompartmentNote}"`, duration: 9000 });
+    if (n === 4 && hiddenDetailsEnabled && compartmentDetail?.note) {
+      toast(`${compartmentDetail.emoji} ${compartmentDetail.label}`, { description: compartmentDetail.note, duration: 9000 });
     }
   };
 
-  const embed = useMemo(() => toEmbedUrl(selected?.video ?? null), [selected]);
-  const exhibitOf = (id: string) => performances.find((p) => p.id === id) || null;
+  const openSpecialExhibit = (exhibit: SpecialExhibit) => {
+    if (!exhibit.youtubeUrl) {
+      toast("🎞️ " + exhibit.label, { description: exhibit.note, duration: 6000 });
+      return;
+    }
+    setSelected(null);
+    setSelectedExhibit(exhibit);
+  };
+
+  const projectorVideo = selectedExhibit?.youtubeUrl ?? selected?.video ?? null;
+  const embed = useMemo(() => toEmbedUrl(projectorVideo), [projectorVideo]);
+  const closeProjector = () => {
+    setSelected(null);
+    setSelectedExhibit(null);
+  };
 
   return (
     <RoomSection id="gallery-5" plaque="gallery five" title={g.roomTitle} subtitle={g.roomSubtitle} bgImage={LIBRARY_BG}>
@@ -138,27 +165,25 @@ export default function Gallery5DanceStudio() {
       <div className="mx-auto mt-10 max-w-4xl">
         <p className="gold-rule justify-center font-display text-xs tracking-[0.3em] text-[#c9a45c]">SPECIAL EXHIBITS</p>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-          {specialExhibits.map((sx, i) => {
-            const linked = sx.performanceId ? exhibitOf(sx.performanceId) : null;
-            return (
-              <button
-                key={sx.id}
-                onClick={() => (linked ? openFrame(linked) : toast("🎞️ " + sx.label, { description: sx.note, duration: 6000 }))}
-                className="border border-[#c9a45c]/35 bg-[#241a0e]/85 p-4 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c9a45c] focus:outline-none focus:ring-2 focus:ring-[#c9a45c]"
-                style={{ transform: `rotate(${(i % 3) - 1}deg)`, animation: `floatSlow ${6 + (i % 3)}s ease-in-out infinite` }}
-              >
-                <p className="font-display text-[10px] tracking-[0.25em] text-[#c9a45c]">COLLECTION {String(i + 1).padStart(2, "0")}</p>
-                <p className="mt-1 font-hand text-lg leading-snug text-[#e8cd8c]">{sx.label}</p>
-                <p className="mt-1 font-body text-xs italic leading-relaxed text-[#d8c9a5]/70">{sx.note}</p>
-                {linked && <p className="mt-2 font-display text-[9px] tracking-[0.2em] text-[#c9a45c]/60">→ VIEW: {linked.title.toUpperCase()}</p>}
-              </button>
-            );
-          })}
+          {specialExhibits.map((sx, i) => (
+            <button
+              key={sx.id}
+              onClick={() => openSpecialExhibit(sx)}
+              className="border border-[#c9a45c]/35 bg-[#241a0e]/85 p-4 text-left backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c9a45c] focus:outline-none focus:ring-2 focus:ring-[#c9a45c]"
+              style={{ transform: `rotate(${(i % 3) - 1}deg)`, animation: `floatSlow ${6 + (i % 3)}s ease-in-out infinite` }}
+              aria-label={sx.youtubeUrl ? `Watch special exhibit: ${sx.label}` : `Read special exhibit: ${sx.label}`}
+            >
+              <p className="font-display text-[10px] tracking-[0.25em] text-[#c9a45c]">COLLECTION {String(i + 1).padStart(2, "0")}</p>
+              <p className="mt-1 font-hand text-lg leading-snug text-[#e8cd8c]">{sx.label}</p>
+              <p className="mt-1 font-body text-xs italic leading-relaxed text-[#d8c9a5]/70">{sx.note}</p>
+              {sx.youtubeUrl && <p className="mt-2 font-display text-[9px] tracking-[0.2em] text-[#c9a45c]/60">▶ WATCH THIS COLLECTION</p>}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Glass display case — studio artifacts */}
-      <div className="mx-auto mt-10 max-w-4xl">
+      {studioCaseEnabled && studioCase.length > 0 && <div className="mx-auto mt-10 max-w-4xl">
         <p className="gold-rule justify-center font-display text-xs tracking-[0.3em] text-[#c9a45c]">THE STUDIO CASE</p>
         <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
           {studioCase.map((item) => (
@@ -176,47 +201,40 @@ export default function Gallery5DanceStudio() {
           ))}
         </div>
         <p className="mt-3 text-center font-hand text-base text-[#c9a45c]/70">tap the glass gently · the artifacts are older than they look</p>
-      </div>
+      </div>}
 
-      {/* Hidden details: rehearsal diary + folded schedule + hairpin */}
-      <div className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-4">
-        <button
-          onClick={() => setDiaryOpen(true)}
-          className="font-hand text-lg text-[#c9a45c]/75 underline decoration-dotted underline-offset-4 transition-colors hover:text-[#e8cd8c] focus:outline-none focus:ring-2 focus:ring-[#c9a45c]"
-        >
-          📓 a rehearsal diary, left open…
-        </button>
-        <button
-          onClick={() => toast("🗓️ A folded performance schedule", { description: g.scheduleNote, duration: 8000 })}
-          className="font-hand text-lg text-[#c9a45c]/75 underline decoration-dotted underline-offset-4 transition-colors hover:text-[#e8cd8c] focus:outline-none focus:ring-2 focus:ring-[#c9a45c]"
-        >
-          🗓️ a folded schedule…
-        </button>
-        <button
-          onClick={() => toast("📎 Exhibit: one forgotten hairpin", { description: g.hairpinNote, duration: 8000 })}
-          className="font-hand text-lg text-[#c9a45c]/75 underline decoration-dotted underline-offset-4 transition-colors hover:text-[#e8cd8c] focus:outline-none focus:ring-2 focus:ring-[#c9a45c]"
-          aria-label="A forgotten hairpin"
-        >
-          📎 something small on the floor…
-        </button>
-      </div>
+      {/* Hidden details — each item can be added, removed, or assigned a behavior in Curator Mode */}
+      {hiddenDetailsEnabled && hiddenDetails.some((detail) => detail.kind !== "compartment") && (
+        <div className="mx-auto mt-8 flex max-w-2xl flex-wrap items-center justify-center gap-4">
+          {hiddenDetails.filter((detail) => detail.kind !== "compartment").map((detail) => (
+            <button
+              key={detail.id}
+              onClick={() => detail.kind === "diary" ? setSelectedDiary(detail) : toast(`${detail.emoji} ${detail.label}`, { description: detail.note, duration: 8000 })}
+              className="font-hand text-lg text-[#c9a45c]/75 underline decoration-dotted underline-offset-4 transition-colors hover:text-[#e8cd8c] focus:outline-none focus:ring-2 focus:ring-[#c9a45c]"
+              aria-label={`Open hidden detail: ${detail.label}`}
+            >
+              {detail.emoji} {detail.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Rehearsal diary dialog */}
-      <Dialog open={diaryOpen} onOpenChange={setDiaryOpen}>
+      <Dialog open={!!selectedDiary} onOpenChange={(open) => !open && setSelectedDiary(null)}>
         <DialogContent className="max-w-md border-[oklch(0.72_0.09_80/50%)] bg-[#f8f2e2] text-[#3d3020]">
           <DialogHeader>
-            <DialogTitle className="room-title text-xl">The Rehearsal Diary</DialogTitle>
+            <DialogTitle className="room-title text-xl">{selectedDiary?.label || "The Rehearsal Diary"}</DialogTitle>
             <DialogDescription className="plaque !text-[10px]">found beneath the ballet barre · entry undated</DialogDescription>
           </DialogHeader>
           <div className="border-l-2 border-[#a83226]/40 pl-4">
-            <p className="font-hand text-2xl leading-relaxed text-[#5a4327]">"{studioHiddenNote}"</p>
+            <p className="font-hand text-2xl leading-relaxed text-[#5a4327]">"{selectedDiary?.note}"</p>
           </div>
           <p className="text-right font-hand text-base text-[#8a6a38]">— the audience of one</p>
         </DialogContent>
       </Dialog>
 
-      {/* The vintage projector viewing experience */}
-      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+      {/* The vintage projector viewing experience — shared screen, independent data sources */}
+      <Dialog open={!!selected || !!selectedExhibit} onOpenChange={(open) => !open && closeProjector()}>
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-[oklch(0.72_0.09_80/50%)] bg-[#140e06] p-0 text-[#e8d9b5]">
           <div style={{ animation: "fadeUp 0.5s cubic-bezier(0.23,1,0.32,1) both" }}>
             {/* stage curtains */}
@@ -224,10 +242,14 @@ export default function Gallery5DanceStudio() {
               <div className="w-6 shrink-0 md:w-10" style={{ background: "repeating-linear-gradient(90deg, #5a1f18 0px, #7a2c20 7px, #5a1f18 14px)" }} aria-hidden="true" />
               <div className="min-w-0 flex-1 px-5 py-5 md:px-7">
                 <DialogHeader>
-                  <p className="font-display text-[10px] tracking-[0.3em] text-[#c9a45c]">FROM THE PERFORMANCE ARCHIVE · REEL {selected ? String(performances.findIndex((x) => x.id === selected.id) + 1).padStart(2, "0") : "—"}</p>
-                  <DialogTitle className="font-display text-2xl leading-snug text-[#e8cd8c]">{selected?.title}</DialogTitle>
+                  <p className="font-display text-[10px] tracking-[0.3em] text-[#c9a45c]">
+                    {selectedExhibit
+                      ? `FROM THE SPECIAL COLLECTION · EXHIBIT ${String(specialExhibits.findIndex((item) => item.id === selectedExhibit.id) + 1).padStart(2, "0")}`
+                      : `FROM THE PERFORMANCE ARCHIVE · REEL ${selected ? String(performances.findIndex((item) => item.id === selected.id) + 1).padStart(2, "0") : "—"}`}
+                  </p>
+                  <DialogTitle className="font-display text-2xl leading-snug text-[#e8cd8c]">{selectedExhibit?.label || selected?.title}</DialogTitle>
                   <DialogDescription className="font-body text-xs italic text-[#d8c9a5]/80">
-                    {selected?.year}{selected?.location ? ` · ${selected.location}` : ""}
+                    {selectedExhibit ? selectedExhibit.note : `${selected?.year || ""}${selected?.location ? ` · ${selected.location}` : ""}`}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -238,7 +260,7 @@ export default function Gallery5DanceStudio() {
                     {embed.kind === "iframe" && (
                       <iframe
                         src={embed.src}
-                        title={selected?.title || "Archived performance"}
+                        title={selectedExhibit?.label || selected?.title || "Museum exhibit"}
                         className="h-full w-full"
                         allow="autoplay; encrypted-media; picture-in-picture"
                         allowFullScreen
@@ -250,7 +272,7 @@ export default function Gallery5DanceStudio() {
                     {embed.kind === "none" && (
                       <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-b from-[#1a130a] to-[#0c0803]">
                         {selected?.thumbnail ? (
-                          <img src={selected.thumbnail} alt={`Still from ${selected?.title}`} className="h-full w-full object-contain" style={{ filter: "sepia(0.2)" }} />
+                          <img src={selected.thumbnail} alt={`Still from ${selected.title}`} className="h-full w-full object-contain" style={{ filter: "sepia(0.2)" }} />
                         ) : (
                           <>
                             <span className="text-4xl" aria-hidden="true">🎞️</span>
@@ -267,6 +289,12 @@ export default function Gallery5DanceStudio() {
                 <p className="mt-2 text-center font-hand text-sm text-[#c9a45c]/60">restored from the private collection · projector no. 5</p>
 
                 {/* archival plaques */}
+                {selectedExhibit?.note && (
+                  <div className="mt-4 border border-[#c9a45c]/25 bg-[#241a0e]/70 p-4">
+                    <p className="plaque !text-[9px] !text-[#c9a45c]">special exhibit note</p>
+                    <p className="mt-1 font-body text-sm italic leading-relaxed text-[#d8c9a5]">{selectedExhibit.note}</p>
+                  </div>
+                )}
                 {selected?.description && (
                   <div className="mt-4 border border-[#c9a45c]/25 bg-[#241a0e]/70 p-4">
                     <p className="plaque !text-[9px] !text-[#c9a45c]">exhibit description</p>

@@ -97,7 +97,18 @@ export interface Performance {
 export interface SpecialExhibit {
   id: string;
   label: string;
-  performanceId: string;
+  /** Legacy field retained so older museum backups remain importable. */
+  performanceId?: string;
+  note: string;
+  /** Independent footage for this collection; it no longer inherits an archived performance. */
+  youtubeUrl: string | null;
+}
+export type HiddenDetailKind = "diary" | "compartment" | "schedule" | "hairpin" | "custom";
+export interface HiddenDetail {
+  id: string;
+  kind: HiddenDetailKind;
+  emoji: string;
+  label: string;
   note: string;
 }
 export interface StudioCaseItem {
@@ -197,7 +208,11 @@ export interface MuseumData {
     reservedChairRight: string;
     performances: Performance[];
     specialExhibits: SpecialExhibit[];
+    studioCaseEnabled: boolean;
     studioCase: StudioCaseItem[];
+    hiddenDetailsEnabled: boolean;
+    hiddenDetails: HiddenDetail[];
+    /** Legacy note fields retained for older imported backups. */
     hiddenNote: string;
     hiddenCompartmentNote: string;
     hairpinNote: string;

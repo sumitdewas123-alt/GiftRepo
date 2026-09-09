@@ -629,37 +629,43 @@
         "id": "sx-1",
         "label": "First Performance",
         "performanceId": "perf-1",
-        "note": "Where the language was first spoken in public."
+        "note": "Where the language was first spoken in public.",
+        "youtubeUrl": null
       },
       {
         "id": "sx-2",
         "label": "Favorite Performance",
         "performanceId": "perf-2",
-        "note": "By unanimous vote of a jury of one."
+        "note": "By unanimous vote of a jury of one.",
+        "youtubeUrl": null
       },
       {
         "id": "sx-3",
         "label": "Most Emotional Performance",
         "performanceId": "perf-4",
-        "note": "Nobody remembers the decorations. Everybody remembers the dance."
+        "note": "Nobody remembers the decorations. Everybody remembers the dance.",
+        "youtubeUrl": null
       },
       {
         "id": "sx-4",
         "label": "The One She Doesn't Know I Saved",
         "performanceId": "perf-5",
-        "note": "Shhh."
+        "note": "Shhh.",
+        "youtubeUrl": null
       },
       {
         "id": "sx-5",
         "label": "Every Performance Together",
         "performanceId": "",
-        "note": "A standing exhibit. It grows every year."
+        "note": "A standing exhibit. It grows every year.",
+        "youtubeUrl": null
       },
       {
         "id": "sx-6",
         "label": "Performances That Made Me Proud",
         "performanceId": "",
-        "note": "Curatorial note: all of them. This label is a formality."
+        "note": "Curatorial note: all of them. This label is a formality.",
+        "youtubeUrl": null
       }
     ],
     "studioCase": [
@@ -703,7 +709,39 @@
     "hiddenNote": "You never looked at the audience. You just danced.",
     "hiddenCompartmentNote": "Behind the fourth frame, tucked into the ballet barre, there's a note. It says: \"This studio was never really about the steps.\"",
     "hairpinNote": "A forgotten hairpin, catalogued with full museum honours. Exhibit condition: bent. Sentimental value: priceless.",
-    "scheduleNote": "A folded performance schedule. Every entry circled. Someone never intended to miss a single one."
+    "scheduleNote": "A folded performance schedule. Every entry circled. Someone never intended to miss a single one.",
+    "studioCaseEnabled": true,
+    "hiddenDetailsEnabled": true,
+    "hiddenDetails": [
+      {
+        "id": "hd-diary",
+        "kind": "diary",
+        "emoji": "📓",
+        "label": "a rehearsal diary, left open…",
+        "note": "You never looked at the audience. You just danced."
+      },
+      {
+        "id": "hd-compartment",
+        "kind": "compartment",
+        "emoji": "🩰",
+        "label": "something behind the fourth frame…",
+        "note": "Behind the fourth frame, tucked into the ballet barre, there's a note. It says: \"This studio was never really about the steps.\""
+      },
+      {
+        "id": "hd-schedule",
+        "kind": "schedule",
+        "emoji": "🗓️",
+        "label": "a folded schedule…",
+        "note": "A folded performance schedule. Every entry circled. Someone never intended to miss a single one."
+      },
+      {
+        "id": "hd-hairpin",
+        "kind": "hairpin",
+        "emoji": "📎",
+        "label": "something small on the floor…",
+        "note": "A forgotten hairpin, catalogued with full museum honours. Exhibit condition: bent. Sentimental value: priceless."
+      }
+    ]
   },
   "gallery5": {
     "cassettes": [

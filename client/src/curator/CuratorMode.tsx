@@ -8,7 +8,7 @@ import { useCurator } from "./CuratorContext";
 import { useImageUpload } from "./useImageUpload";
 import RichTextEditor from "./RichTextEditor";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import type { MuseumData, TimelineEntry, MemoryCardSmall, WallItem, Observation, Evidence, Performance, SpecialExhibit, StudioCaseItem, Cassette, Song, Cabinet, Polaroid, MapPin, Star, Letter, FutureLabel } from "@/lib/museumDataLoader";
+import type { MuseumData, TimelineEntry, MemoryCardSmall, WallItem, Observation, Evidence, Performance, SpecialExhibit, StudioCaseItem, HiddenDetail, HiddenDetailKind, Cassette, Song, Cabinet, Polaroid, MapPin, Star, Letter, FutureLabel } from "@/lib/museumDataLoader";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -675,12 +675,42 @@ function Gallery4Editor() {
   };
 
   const removePerformance = (idx: number) => {
-    const removed = g4.performances[idx];
-    setG4({
-      performances: g4.performances.filter((_, i) => i !== idx),
-      specialExhibits: g4.specialExhibits.map((sx) => (sx.performanceId === removed.id ? { ...sx, performanceId: "" } : sx)),
-    });
+    setG4({ performances: g4.performances.filter((_, i) => i !== idx) });
   };
+
+  const updateSpecialExhibit = (id: string, patch: Partial<SpecialExhibit>) => {
+    setData((prev) => ({
+      ...prev,
+      gallery4: {
+        ...prev.gallery4,
+        specialExhibits: prev.gallery4.specialExhibits.map((item) => item.id === id ? { ...item, ...patch } : item),
+      },
+    }));
+  };
+
+  const updateStudioArtifact = (id: string, patch: Partial<StudioCaseItem>) => {
+    setData((prev) => ({
+      ...prev,
+      gallery4: {
+        ...prev.gallery4,
+        studioCase: prev.gallery4.studioCase.map((item) => item.id === id ? { ...item, ...patch } : item),
+      },
+    }));
+  };
+
+  const updateHiddenDetail = (id: string, patch: Partial<HiddenDetail>) => {
+    setData((prev) => ({
+      ...prev,
+      gallery4: {
+        ...prev.gallery4,
+        hiddenDetails: (prev.gallery4.hiddenDetails || []).map((item) => item.id === id ? { ...item, ...patch } : item),
+      },
+    }));
+  };
+
+  const studioCaseEnabled = g4.studioCaseEnabled !== false;
+  const hiddenDetailsEnabled = g4.hiddenDetailsEnabled !== false;
+  const hiddenDetails = g4.hiddenDetails || [];
 
   return (
     <div className="space-y-6">
@@ -764,98 +794,139 @@ function Gallery4Editor() {
       {/* Special Exhibits */}
       <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
         <h4 className="text-sm font-semibold text-gray-700 flex items-center justify-between">
-          <span>Special Exhibits (editable collections)</span>
+          <span>Special Exhibits (independent YouTube collections)</span>
           <button
             type="button"
-            onClick={() => setG4({ specialExhibits: [...g4.specialExhibits, { id: `sx-${Date.now()}`, label: "New Collection", performanceId: "", note: "" }] })}
+            onClick={() => setG4({ specialExhibits: [...g4.specialExhibits, { id: `sx-${Date.now()}`, label: "New Collection", note: "", youtubeUrl: null }] })}
             className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded"
           >
             + Add Exhibit
           </button>
         </h4>
+        <p className="text-xs text-gray-500">Each collection plays its own YouTube video in the projector. It is not linked to an archived performance.</p>
         {g4.specialExhibits.map((sx, idx) => (
           <div key={sx.id} className="p-3 border border-gray-200 rounded space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Collection {String(idx + 1).padStart(2, "0")}</span>
-              <button type="button" onClick={() => setG4({ specialExhibits: g4.specialExhibits.filter((_, i) => i !== idx) })} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+              <button type="button" onClick={() => setG4({ specialExhibits: g4.specialExhibits.filter((item) => item.id !== sx.id) })} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
                 Delete
               </button>
             </div>
-            <EditableField label="Label" value={sx.label} onChange={(v) => {
-              const items = [...g4.specialExhibits]; items[idx] = { ...items[idx], label: v };
-              setG4({ specialExhibits: items });
-            }} />
-            <EditableField label="Note" value={sx.note} onChange={(v) => {
-              const items = [...g4.specialExhibits]; items[idx] = { ...items[idx], note: v };
-              setG4({ specialExhibits: items });
-            }} multiline rows={2} />
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">Linked Performance (opens in projector)</label>
-              <select
-                value={sx.performanceId}
-                onChange={(e) => {
-                  const items = [...g4.specialExhibits]; items[idx] = { ...items[idx], performanceId: e.target.value };
-                  setG4({ specialExhibits: items });
-                }}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-              >
-                <option value="">— none (shows the note only) —</option>
-                {g4.performances.map((p) => (
-                  <option key={p.id} value={p.id}>{p.title} ({p.year})</option>
-                ))}
-              </select>
-            </div>
+            <EditableField label="Label" value={sx.label} onChange={(v) => updateSpecialExhibit(sx.id, { label: v })} />
+            <EditableField label="Note" value={sx.note} onChange={(v) => updateSpecialExhibit(sx.id, { note: v })} multiline rows={2} />
+            <EditableField
+              label="YouTube Link (this exhibit's own video)"
+              value={sx.youtubeUrl || ""}
+              onChange={(v) => updateSpecialExhibit(sx.id, { youtubeUrl: v.trim() || null, performanceId: "" })}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p className="text-[10px] text-gray-400">Supports YouTube watch, share, Shorts, and embed links. Leave empty to show only the exhibit note.</p>
           </div>
         ))}
       </div>
 
       {/* Studio Case */}
-      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700 flex items-center justify-between">
+      <div className={`p-4 rounded-lg border space-y-3 ${studioCaseEnabled ? "bg-white border-gray-200" : "bg-gray-50 border-dashed border-gray-300"}`}>
+        <h4 className="text-sm font-semibold text-gray-700 flex flex-wrap items-center justify-between gap-2">
           <span>The Studio Case (glass display artifacts)</span>
-          <button
-            type="button"
-            onClick={() => setG4({ studioCase: [...g4.studioCase, { id: `sc-${Date.now()}`, emoji: "🩰", label: "New Artifact", note: "" }] })}
-            className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded"
-          >
-            + Add Artifact
-          </button>
+          <div className="flex flex-wrap gap-2">
+            {studioCaseEnabled ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setG4({ studioCase: [...g4.studioCase, { id: `sc-${Date.now()}`, emoji: "🩰", label: "New Artifact", note: "" }] })}
+                  className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded"
+                >
+                  + Add Artifact
+                </button>
+                <button type="button" onClick={() => setG4({ studioCaseEnabled: false })} className="px-3 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+                  Delete Entire Section
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={() => setG4({ studioCaseEnabled: true })} className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded">
+                + Add Studio Case Section
+              </button>
+            )}
+          </div>
         </h4>
-        {g4.studioCase.map((item, idx) => (
+        {!studioCaseEnabled && <p className="text-xs text-gray-500">This whole section is currently removed from the public museum. Restoring it keeps the saved artifacts.</p>}
+        {studioCaseEnabled && g4.studioCase.map((item, idx) => (
           <div key={item.id} className="p-3 border border-gray-200 rounded space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Artifact {String(idx + 1).padStart(2, "0")}</span>
-              <button type="button" onClick={() => setG4({ studioCase: g4.studioCase.filter((_, i) => i !== idx) })} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
-                Delete
+              <button type="button" onClick={() => setG4({ studioCase: g4.studioCase.filter((artifact) => artifact.id !== item.id) })} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+                Delete Item
               </button>
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <EditableField label="Emoji" value={item.emoji} onChange={(v) => {
-                const items = [...g4.studioCase]; items[idx] = { ...items[idx], emoji: v };
-                setG4({ studioCase: items });
-              }} />
+              <EditableField label="Emoji" value={item.emoji} onChange={(v) => updateStudioArtifact(item.id, { emoji: v })} />
               <div className="col-span-2">
-                <EditableField label="Label" value={item.label} onChange={(v) => {
-                  const items = [...g4.studioCase]; items[idx] = { ...items[idx], label: v };
-                  setG4({ studioCase: items });
-                }} />
+                <EditableField label="Label" value={item.label} onChange={(v) => updateStudioArtifact(item.id, { label: v })} />
               </div>
             </div>
-            <EditableField label="Note (shown when tapped)" value={item.note} onChange={(v) => {
-              const items = [...g4.studioCase]; items[idx] = { ...items[idx], note: v };
-              setG4({ studioCase: items });
-            }} multiline rows={2} />
+            <EditableField label="Note (shown when tapped)" value={item.note} onChange={(v) => updateStudioArtifact(item.id, { note: v })} multiline rows={2} />
           </div>
         ))}
       </div>
 
       {/* Hidden details */}
-      <div className="p-4 bg-white rounded-lg border border-gray-200 space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700">Hidden Details</h4>
-        <EditableField label="Rehearsal Diary Note (hidden)" value={g4.hiddenNote} onChange={(v) => setG4({ hiddenNote: v })} multiline rows={2} />
-        <EditableField label="Hidden Compartment Note (appears after opening 4 frames)" value={g4.hiddenCompartmentNote} onChange={(v) => setG4({ hiddenCompartmentNote: v })} multiline rows={2} />
-        <EditableField label="Forgotten Hairpin Note" value={g4.hairpinNote} onChange={(v) => setG4({ hairpinNote: v })} multiline rows={2} />
-        <EditableField label="Folded Schedule Note" value={g4.scheduleNote} onChange={(v) => setG4({ scheduleNote: v })} multiline rows={2} />
+      <div className={`p-4 rounded-lg border space-y-3 ${hiddenDetailsEnabled ? "bg-white border-gray-200" : "bg-gray-50 border-dashed border-gray-300"}`}>
+        <h4 className="text-sm font-semibold text-gray-700 flex flex-wrap items-center justify-between gap-2">
+          <span>Hidden Details</span>
+          <div className="flex flex-wrap gap-2">
+            {hiddenDetailsEnabled ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setG4({ hiddenDetails: [...hiddenDetails, { id: `hd-${Date.now()}`, kind: "custom", emoji: "✦", label: "a hidden studio detail…", note: "" }] })}
+                  className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded"
+                >
+                  + Add Detail
+                </button>
+                <button type="button" onClick={() => setG4({ hiddenDetailsEnabled: false })} className="px-3 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+                  Delete Entire Section
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={() => setG4({ hiddenDetailsEnabled: true })} className="px-3 py-1 text-xs bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded">
+                + Add Hidden Details Section
+              </button>
+            )}
+          </div>
+        </h4>
+        {!hiddenDetailsEnabled && <p className="text-xs text-gray-500">Hidden details and the fourth-frame discovery are removed from the public museum. Restoring the section keeps its saved items.</p>}
+        {hiddenDetailsEnabled && hiddenDetails.map((detail, idx) => (
+          <div key={detail.id} className="p-3 border border-gray-200 rounded space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400">Hidden Detail {String(idx + 1).padStart(2, "0")}</span>
+              <button type="button" onClick={() => setG4({ hiddenDetails: hiddenDetails.filter((item) => item.id !== detail.id) })} className="px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded">
+                Delete Item
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <EditableField label="Emoji" value={detail.emoji} onChange={(v) => updateHiddenDetail(detail.id, { emoji: v })} />
+              <div className="col-span-2">
+                <EditableField label="Label" value={detail.label} onChange={(v) => updateHiddenDetail(detail.id, { label: v })} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-gray-600">Behavior</label>
+              <select
+                value={detail.kind}
+                onChange={(e) => updateHiddenDetail(detail.id, { kind: e.target.value as HiddenDetailKind })}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+              >
+                <option value="custom">Show note when tapped</option>
+                <option value="diary">Open rehearsal diary</option>
+                <option value="compartment">Reveal after opening four performance frames</option>
+                <option value="schedule">Show folded-schedule note</option>
+                <option value="hairpin">Show discovered-object note</option>
+              </select>
+            </div>
+            <EditableField label="Hidden Note" value={detail.note} onChange={(v) => updateHiddenDetail(detail.id, { note: v })} multiline rows={2} />
+          </div>
+        ))}
       </div>
     </div>
   );
